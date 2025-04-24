@@ -1,6 +1,4 @@
 import Logo from '@/assets/logo.svg';
-import User from '@/assets/icon/user.svg';
-import Lock from '@/assets/icon/lock.svg';
 import EyeOff from '@/assets/icon/eye-off.svg';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -10,6 +8,7 @@ import {SIGNUP_ROUTE } from '@/utils/constants';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {toast} from 'sonner';
+import {Link} from 'react-router-dom';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -48,7 +47,7 @@ const Signup = () => {
     if (validateSignup()){
       const res = await apiClient.post(
         SIGNUP_ROUTE,
-        {full_name: fullname, email, password},
+        {full_name: fullname, phone, email, password},
         {withCredentials: true}
       );
       if (res.status == 201){
@@ -69,7 +68,7 @@ const Signup = () => {
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-3xl font-medium mt-6 mb-6">Đăng ký</h1>
             <p className="text-sm font-medium mb-6">Bạn đã có tài khoản?{' '}
-              <a href="auth" className="text-[#0656d2]">Đăng nhập ngay</a>
+              <Link to="/auth/login" className="text-[#0656d2]">Đăng nhập ngay</Link>
             </p>
           </div>
           <div className="p-8">

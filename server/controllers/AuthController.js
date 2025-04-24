@@ -10,13 +10,13 @@ const createToken = (email, userId) => {
 
 export const signup = async (req, res, next) => {
     try {
-        const {full_name, email, password} = req.body;
+        const {full_name, email, phone, password} = req.body;
         if (!email || !password || !full_name){
             return res.status(400).send("Fullname, email, and password are required");
     
         }
 
-        const user = await User.create({full_name, email, password});
+        const user = await User.create({full_name, email, phone, password});
         
         res.cookie("jwt", createToken(email, user.id), {
             maxAge,
@@ -29,6 +29,8 @@ export const signup = async (req, res, next) => {
                 id: user.id,
                 email: user.email,
                 full_name: user.full_name,
+                phone: user.phone,
+                role: user.role,
             }
         });
     } catch (error) {
