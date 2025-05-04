@@ -1,4 +1,5 @@
 import Logo from '@/assets/logo.svg';
+import Eye from '@/assets/icon/eye.svg';
 import EyeOff from '@/assets/icon/eye-off.svg';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -17,7 +18,9 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validateSignup = () => {
     if (!fullname.length){
@@ -45,16 +48,21 @@ const Signup = () => {
 
   const handleSignup = async () => {
     if (validateSignup()){
-      const res = await apiClient.post(
-        SIGNUP_ROUTE,
-        {full_name: fullname, phone, email, password},
-        {withCredentials: true}
-      );
-      if (res.status == 201){
-        setUserInfo(res.data.user);
-        navigate('/profile');
+      try {
+        const res = await apiClient.post(
+          SIGNUP_ROUTE,
+          {full_name: fullname, phone, email, password},
+          {withCredentials: true}
+        );
+        if (res.status == 201){
+          setUserInfo(res.data.user);
+          navigate('/profile');
+        }
+        toast.info('Đăng ký thành công');
+      } catch (error) {
+        const message = error.response?.data?.message || 'Đăng ký thất bại';
+        toast.error(message);
       }
-      console.log({res});
     }
   }
 
@@ -114,12 +122,16 @@ const Signup = () => {
           <div className="relative mb-5">                         
             <Input                                    
               placeholder="Nhập mật khẩu"            
-              type="email"
+              type={showPassword ? "text" : "password"}
               className="w-full border border-gray-300 rounded-xl my-3 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-[#0656d2] "
               value={password}
               onChange={(e) => setPassword(e.target.value)}                  
             />
-            <img src={EyeOff} className="absolute right-2 top-1/2 -translate-y-1/2 text-md text-black"/>                
+            <img 
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-md text-black"
+              src={showPassword ? Eye : EyeOff}
+              onClick={() => setShowPassword(!showPassword)}
+            />                
           </div>
           <label htmlFor="email" className="block text-base mb-1">
             Nhập lại mật khẩu <span className="text-red-600">*</span>
@@ -127,12 +139,16 @@ const Signup = () => {
           <div className="relative mb-8">
               <Input            
                 placeholder="Xác nhận lại mật khẩu"
-                type="password"
+                type= {showConfirmPassword ? "text" : "password"}
                 className="w-full border border-gray-300 rounded-xl my-3 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-[#0656d2] "
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
-              <img src={EyeOff} className="absolute right-2 top-1/2 -translate-y-1/2 text-md text-black"/>                
+              <img 
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-md text-black"
+                src={showConfirmPassword ? Eye : EyeOff}
+                onClick={()=> setShowConfirmPassword(!showConfirmPassword)} 
+              />                
           </div>            
           <Button className="w-full bg-[#0656d2] text-white font-semibold my-3 rounded-xlxl hover:bg-[#054bb8] transition-colors" onClick={handleSignup}>Đăng ký</Button>
           </div>

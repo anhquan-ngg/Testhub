@@ -16,6 +16,12 @@ export const signup = async (req, res, next) => {
     
         }
 
+        const existingUser = await User.findOne({ where: { email } });
+
+        if (existingUser) {
+            return res.status(409).json({ message: "Email đã được sử dụng" }); 
+        }
+
         const user = await User.create({full_name, email, phone, password});
         
         res.cookie("jwt", createToken(email, user.id), {
@@ -43,16 +49,16 @@ export const login = async (req, res, next) => {
     try {
         const {email, password} = req.body;
         if (!email || !password){
-            return res.status(400).send("Email and password are required");
+            return res.status(400).json({message: "Email và mật khẩu không được để trống"});
         }
 
         const user = await User.findOne({where: {email}});
         if(!user){
-            return res.status(404).send("User not found with given email");
+            return res.status(404).json({message: "Email không tồn tại"});
         }
         const auth = await compare(password, user.password);
         if(!auth){
-            return res.status(400).send("Password is incorrect");
+            return res.status(400).json({message: "Mật khẩu không chính xác"});
         }
 
         res.cookie("jwt", createToken(user.email, user.id), {

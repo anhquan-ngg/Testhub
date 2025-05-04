@@ -1,6 +1,7 @@
 import Logo from '@/assets/logo.svg';
 import User from '@/assets/icon/user.svg';
 import Lock from '@/assets/icon/lock.svg';
+import Eye from '@/assets/icon/eye.svg';
 import EyeOff from '@/assets/icon/eye-off.svg';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -18,6 +19,7 @@ const Login = () => {
   const {setUserInfo} = useAppStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const validateLogin = () => {
     if (!email.length){
@@ -50,8 +52,9 @@ const Login = () => {
         }
         console.log(res.data);
       } catch (error) {
-        toast.error("Đăng nhập thất bại");
-        console.log({error});
+        const message = error.response?.data?.message || 'Đăng nhập thất bại';
+        toast.error(message);
+        console.log(error);
       }
     }
   }
@@ -89,13 +92,17 @@ const Login = () => {
           <div className="relative mb-8">
               <Input            
                 placeholder="Mật khẩu"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 className="w-full border border-gray-300 rounded-xl my-3 pl-12 pr-4 text-base focus:outline-none focus:ring-2 focus:ring-[#0656d2] "
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <img src={Lock} className="absolute left-2 top-1/2 -translate-y-1/2 text-md text-black"/>
-              <img src={EyeOff} className="absolute right-2 top-1/2 -translate-y-1/2 text-md text-black"/>                
+              <img src={Lock} className="absolute left-2 top-1/2 -translate-y-1/2 text-md text-black"/>  
+              <img  
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-md text-black"
+                src={showPassword ? Eye : EyeOff }
+                onClick={() => setShowPassword(!showPassword)}
+              />                
           </div>            
           <Button className="w-full bg-[#0656d2] text-white font-semibold my-3 rounded-xl hover:bg-[#054bb8] transition-colors" onClick={handleLogin}>Đăng nhập</Button>
           </div>
