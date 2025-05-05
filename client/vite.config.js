@@ -1,16 +1,20 @@
-import path from "path"
-import tailwindcss from "@tailwindcss/vite"
-import react from "@vitejs/plugin-react"
-import svgr from "vite-plugin-svgr"
-import { defineConfig } from "vite"
- 
-// https://vite.dev/config/
+import path from 'path';
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
+import tailwindcss from '@tailwindcss/vite';
+
 export default defineConfig({
-  plugins: [react(), tailwindcss(), svgr()],
+  plugins: [
+    svgr({
+      exportAsDefault: false, // Cho phép dùng cú pháp `ReactComponent`
+    }),
+    react(),
+    tailwindcss()
+  ],
   resolve: {
     alias: {
-      //eslint-disable-next-line no-undef
-      "@": path.resolve(__dirname, "./src"),
+      '@': path.resolve(__dirname, './src'),
     },
   },
-})
+});

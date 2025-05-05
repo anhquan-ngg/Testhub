@@ -4,6 +4,7 @@ import cors from 'cors';
 import sequelize from './db.js';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/AuthRoutes.js';
+import examRoutes from './routes/ExamRoutes.js';
 
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/exams', examRoutes);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

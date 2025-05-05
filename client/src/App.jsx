@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import Profile from './pages/profile';
-import Exam from './pages/exam';
+import Home from './pages/home';
 import Signup from './pages/auth/signup';
 import Login from './pages/auth/login';
 
@@ -9,10 +8,12 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/auth/login" element={<Login/>}/>
-        <Route path="/auth/signup" element={<Signup/>}/>
-        <Route path="/auth/profile" element={<Profile/>} />        
-        <Route path="/exams" element={<Exam/>} />
+        <Route path="/auth">
+          <Route path="login" element={<Login/>}/>
+          <Route path="signup" element={<Signup/>}/>
+        </Route>
+        <Route path="/profile" element={<Home/>} />        
+        <Route path="/exams" element={<Home/>} />
         <Route path="*" element={<Navigate to="/auth/login" />} />
       </Routes>
     </BrowserRouter>

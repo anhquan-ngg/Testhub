@@ -47,7 +47,7 @@ const Login = () => {
         if (res.data.user.id){
           setUserInfo(res.data.user);
           if (res.data.user.role == "student"){
-            navigate('/auth/profile');
+            navigate('/exams');
           }
         }
         console.log(res.data);
