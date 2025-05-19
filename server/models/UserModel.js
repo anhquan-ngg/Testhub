@@ -12,10 +12,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  phone: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
   email: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -29,6 +25,22 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('student', 'teacher'),
     defaultValue: 'student',
     allowNull: false,
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  avatar: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  school: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
 }, {
   tableName: 'users', // Tên bảng trong PostgreSQL

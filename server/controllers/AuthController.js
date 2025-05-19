@@ -41,7 +41,7 @@ export const signup = async (req, res, next) => {
         });
     } catch (error) {
         console.log({error});
-        return res.status(500).send("Internal Server Error");
+        return res.status(500).json({message: "Server bị lỗi"});
     }
 }
 
@@ -66,7 +66,6 @@ export const login = async (req, res, next) => {
             secure: true,
             sameSite: "none",
         });
-
         return res.json({
             user: {
                 id: user.id,
@@ -75,9 +74,48 @@ export const login = async (req, res, next) => {
                 role: user.role
             }
         });
+        
     } catch (error){
         console.log({error});
-        return res.status(500).send("Internal Server Error");
+        return res.status(500).json({message: "Server bị lỗi"});
+    }
+}
+
+export const getUserInfo = async (req, res, next) => {
+    try {
+        const user = await User.findOne({id: req.userId});
+        if (!user) return res.status(404).json({message: "Không tìm thấy người dùng"});
+        return res.status(200).json({
+            user: {
+                id: user.id,
+                full_name: user.full_name,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.log({error});
+        return res.status(500).json({message: "Server bị lỗi"});
+    }
+}
+
+export const updateUserInfo = async (req, res, next) => {
+    try {
+        const user = await User.findOne({id: req.userId});
+        if (!user) return res.status(404).json({message: "Không tìm thấy người dùng"});
+        const {full_name, phone, school, address} = req.body;
+        await user.update({full_name, phone, school, address});
+        return res.status(200).json({
+            user: {
+                id: user.id,
+                full_name: user.full_name,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch(error){
+        console.log(error);
+        return res.status(500).json({message: "Server bị lỗi"});
     }
 }
 
@@ -88,6 +126,6 @@ export const logout = async (req, res, next) => {
         return res.status(200).send("Logout successfully");
     } catch (error) {
         console.log({error});
-        return res.status(500).send("Internal Server Error");
+        return res.status(500).json({message: "Server bị lỗi"});
     }
 }
