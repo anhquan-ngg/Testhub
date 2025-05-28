@@ -50,7 +50,6 @@ const Login = () => {
             navigate('/exams');
           }
         }
-        console.log(res.data);
       } catch (error) {
         const message = error.response?.data?.message || 'Đăng nhập thất bại';
         toast.error(message);
@@ -69,7 +68,7 @@ const Login = () => {
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-3xl font-medium mt-6 mb-6">Đăng nhập</h1>
             <p className="text-sm font-medium mb-6">Bạn chưa có tài khoản?{' '}
-              <Link to="/auth/signup" className="text-[#0656d2]">Đăng ký ngay</Link>
+              <Link to="/signup" className="text-[#0656d2]">Đăng ký ngay</Link>
             </p>
           </div>
           <div className="p-8">

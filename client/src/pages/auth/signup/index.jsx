@@ -76,7 +76,7 @@ const Signup = () => {
           <div className="flex flex-col items-center justify-center">
             <h1 className="text-3xl font-medium mt-6 mb-6">Đăng ký</h1>
             <p className="text-sm font-medium mb-6">Bạn đã có tài khoản?{' '}
-              <Link to="/auth/login" className="text-[#0656d2]">Đăng nhập ngay</Link>
+              <Link to="/login" className="text-[#0656d2]">Đăng nhập ngay</Link>
             </p>
           </div>
           <div className="p-8">

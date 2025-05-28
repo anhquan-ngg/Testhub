@@ -27,9 +27,9 @@ const ExamContainer = () => {
     {
       id: 4,
       title: "Bài thi số 4",
-      registrationPeriod: "10/05/2025 - 25/05/2025",
+      registrationPeriod: "10/05/2025 - 30/05/2025",
       examDate: "10/06/2025",
-      registrationEnd: "2025-05-25"
+      registrationEnd: "2025-05-30"
     }
   ];
 
