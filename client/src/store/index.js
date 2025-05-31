@@ -4,7 +4,6 @@ import { devtools, persist } from "zustand/middleware";
 const store = (set, get) => ({
     userInfo: undefined,
     setUserInfo: (userInfo) => {
-        console.log('Setting user info in store:', userInfo);
         set({userInfo});
     },
     clearUserInfo: () => {

@@ -122,7 +122,10 @@ export const getUserInfo = async (req, res, next) => {
             id: user.id,
             full_name: user.full_name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            school: user.school,
+            phone: user.phone,
+            address: user.address,
         });
     } catch (error) {
         console.log({error});
@@ -136,14 +139,7 @@ export const updateUserInfo = async (req, res, next) => {
         if (!user) return res.status(404).json({message: "Không tìm thấy người dùng"});
         const {full_name, phone, school, address} = req.body;
         await user.update({full_name, phone, school, address});
-        return res.status(200).json({
-            user: {
-                id: user.id,
-                full_name: user.full_name,
-                email: user.email,
-                role: user.role
-            }
-        });
+        return res.status(200).json(user);
     } catch(error){
         console.log(error);
         return res.status(500).json({message: "Server bị lỗi"});

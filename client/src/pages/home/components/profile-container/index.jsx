@@ -22,53 +22,71 @@ import Edit from "@/assets/icon/edit.svg";
 import { useAppStore } from "@/store";
 import { useState, useEffect } from 'react';
 import { apiClient } from "@/lib/api-client";
-import { UPDATE_USER_INFO_ROUTE } from "@/utils/constants";
+import { GET_USER_INFO_ROUTE, UPDATE_USER_INFO_ROUTE } from "@/utils/constants";
  
 function ProfileContainer() {
   const {userInfo, setUserInfo} = useAppStore();
-  const [updateInfo, setUpdateInfo] = useState({
-    full_name: "",
-    school: "",
-    phone: "",
-    address: "",
-  })
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    school: '',
+    phone: '',
+    address: ''
+  });
   
+  const fetchUserInfo = async() => {
+    try {
+      const response = await apiClient.get(GET_USER_INFO_ROUTE);
+      setUserInfo(response.data);
+      setFormData({
+        full_name: response.data.full_name,
+        school: response.data.school,
+        phone: response.data.phone,
+        address: response.data.address
+      });
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
+  }
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, []);
+
   useEffect(() => {
     if (userInfo) {
-      setUpdateInfo({
-        full_name: userInfo.full_name || "",
-        school: userInfo.school || "",
-        phone: userInfo.phone || "",
-        address: userInfo.address || "",
+      setFormData({
+        full_name: userInfo.full_name || '',
+        school: userInfo.school || '',
+        phone: userInfo.phone || '',
+        address: userInfo.address || ''
       });
     }
-    }, [userInfo]);
+  }, [userInfo]);
 
-  const handleInputChange = async(e) => {
+  const handleInputChange = (e) => {
     const {name, value} = e.target;
-    setUpdateInfo((prev) => ({
-        ...prev,
-        [name]: value
-    }))
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   }
 
   const handleUpdateInfo = async() => {
     try {
+      setIsLoading(true);
       const response = await apiClient.put(
         UPDATE_USER_INFO_ROUTE,
-        updateInfo,
+        formData,
         {withCredentials: true}
-      )
+      );
       if (response.status === 200) {
-        setUpdateInfo({
-          school: "",
-          phone: "",
-          address: "",
-        })
-        setUserInfo(response.data.user)
+        setUserInfo(response.data);
       }
     } catch (error){
-      console.log(error)
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -92,7 +110,7 @@ function ProfileContainer() {
                   />
                   <AvatarFallback>UN</AvatarFallback>
                 </Avatar>
-                <div className="mt-1 text-base font-medium">{userInfo?.full_name}</div>
+                <div className="mt-1 text-base font-medium">{formData.full_name || 'Chưa có tên'}</div>
               </CardContent>
             </Card>
           </div>
@@ -168,7 +186,7 @@ function ProfileContainer() {
                       id="full_name"
                       name="full_name"
                       className="w-[330px] rounded-xl border-neutral-400"
-                      value={updateInfo.full_name}
+                      value={formData.full_name}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -181,7 +199,7 @@ function ProfileContainer() {
                       id="school"
                       name="school"
                       className="w-[330px] rounded-xl border-neutral-400"
-                      value={updateInfo.school}
+                      value={formData.school}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -194,7 +212,7 @@ function ProfileContainer() {
                       id="phone"
                       name="phone"
                       className="w-[330px] rounded-xl border-neutral-400"
-                      value={updateInfo.phone}
+                      value={formData.phone}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -207,7 +225,7 @@ function ProfileContainer() {
                       id="address"
                       name="address"
                       className="w-[330px] rounded-xl border-neutral-400"
-                      value={updateInfo.address}
+                      value={formData.address}
                       onChange={handleInputChange}
                     />
                   </div>
@@ -216,9 +234,10 @@ function ProfileContainer() {
                     <Button
                       variant="secondary"
                       className="w-[330px] bg-slate-300 text-blue-700 rounded-xl cursor-pointer"
-                      onClick={() => handleUpdateInfo()}
+                      onClick={handleUpdateInfo}
+                      disabled={isLoading}
                     >
-                      Cập nhật thông tin
+                      {isLoading ? 'Đang cập nhật...' : 'Cập nhật thông tin'}
                     </Button>
                   </div>
                 </div>
@@ -240,8 +259,8 @@ function ProfileContainer() {
                       <div className="bg-zinc-300 min-h-[100px] w-[75px]"></div>
                     </div>
                     <div className="flex flex-col items-start my-auto text-base font-medium">
-                      <div>Username</div>
-                      <div className="mt-1.5">Email : user@email.com</div>
+                      <div>{formData.full_name || 'Username'}</div>
+                      <div className="mt-1.5">Email : {userInfo?.email || 'user@email.com'}</div>
                       <div className="mt-2">CCCD/CMND: XXXXXXXXXXXX</div>
                       <div className="mt-2">Ngày sinh: XX/XX/XXXX</div>
                     </div>
