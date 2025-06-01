@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.jsx"
+import { apiClient } from '@/lib/api-client';
 
 const mockExamData = {
   "id": "4",
@@ -27,30 +28,30 @@ const mockExamData = {
     {
       "id": "q1",
       "number": 1,
-      "text": "Trong không gian Oxyz, cho mặt cầu (S) có tâm I(1; -2; 3) và bán kính R = 2. Phương trình của mặt cầu (S) là:",
-      "type": "multiple-choice-single",
+      "text": "Đạo hàm của F(x) = 2x³+1 tại x = 2",
+      "type": "single-choice",
       "points": 0.2,
       "options": [
-        { "id": "q1o1", "text": "(x + 1)² + (y - 2)² + (z + 3)² = 4" },
-        { "id": "q1o2", "text": "(x - 1)² + (y + 2)² + (z - 3)² = 2" },
-        { "id": "q1o3", "text": "(x - 1)² + (y + 2)² + (z - 3)² = 4" },
-        { "id": "q1o4", "text": "(x + 1)² + (y - 2)² + (z + 3)² = 2" }
+        { "id": "q1o1", "question_id": "q1", "text": "3", "isCorrect": false },
+        { "id": "q1o2", "question_id": "q1", "text": "9", "isCorrect": false },
+        { "id": "q1o3", "question_id": "q1", "text": "24", "isCorrect": true },
+        { "id": "q1o4", "question_id": "q1", "text": "8", "isCorrect": false }
       ],
-      "image": null
+      "imgUrl": null
     },
     {
       "id": "q2",
       "number": 2,
       "text": "Cho hàm số y = ax³ + bx² + cx + d (a ≠ 0) có đồ thị như hình vẽ bên. Mệnh đề nào sau đây đúng?",
-      "type": "multiple-choice-single",
+      "type": "single-choice",
       "points": 0.2,
       "options": [
-        { "id": "q2o1", "text": "a > 0, d > 0" },
-        { "id": "q2o2", "text": "a < 0, d > 0" },
-        { "id": "q2o3", "text": "a > 0, d < 0" },
-        { "id": "q2o4", "text": "a < 0, d < 0" }
+        { "id": "q2o1", "question_id": "q2", "text": "a > 0, d > 0", "isCorrect": false },
+        { "id": "q2o2", "question_id": "q2", "text": "a < 0, d > 0", "isCorrect": false },
+        { "id": "q2o3", "question_id": "q2", "text": "a > 0, d < 0", "isCorrect": true },
+        { "id": "q2o4", "question_id": "q2", "text": "a < 0, d < 0", "isCorrect": false }
       ],
-      "image": "https://i.imgur.com/exampleGraph.png"
+      "imgUrl": "https://i.imgur.com/exampleGraph.png"
     },
     {
       "id": "q3",
@@ -58,7 +59,8 @@ const mockExamData = {
       "text": "Tìm nguyên hàm của hàm số f(x) = 2x + 1.",
       "type": "fill-in-blank",
       "points": 0.2,
-      "image": null
+      "correctAnswer": "x^2 + x + C",
+      "imgUrl": null
     },
     {
       "id": "q4",
@@ -66,21 +68,22 @@ const mockExamData = {
       "text": "Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, SA ⊥ (ABCD) và SA = a√3. Tính thể tích khối chóp S.ABCD.",
       "type": "fill-in-blank",
       "points": 0.2,
-      "image": null
+      "correctAnswer": "a³√3/6",
+      "imgUrl": null
     },
     {
       "id": "q5",
       "number": 5,
       "text": "Những số nào sau đây là nghiệm của phương trình log₂(x² - x + 2) = 1 + log₂(x+1)? (Chọn tất cả các đáp án đúng)",
-      "type": "multiple-choice-multiple",
+      "type": "multiple-choice",
       "points": 0.2,
       "options": [
-        { "id": "q5o1", "text": "x = 0" },
-        { "id": "q5o2", "text": "x = 1" },
-        { "id": "q5o3", "text": "x = -1/2" },
-        { "id": "q5o4", "text": "x = 2" }
+        { "id": "q5o1", "question_id": "q5", "text": "x = 0", "isCorrect": true },
+        { "id": "q5o2", "question_id": "q5", "text": "x = 1", "isCorrect": false },
+        { "id": "q5o3", "question_id": "q5", "text": "x = -1/2", "isCorrect": false },
+        { "id": "q5o4", "question_id": "q5", "text": "x = 2", "isCorrect": false }
       ],
-      "image": null
+      "imgUrl": null
     }
   ]
 }
@@ -120,7 +123,24 @@ const ExamTakingPage = () => {
   const handleTimeUp = () => {
     console.log("Hết giờ làm bài!");
     setIsTimeUp(true);
-    // Xử lý logic nộp bài tự động
+    
+    // Tính số câu đã làm và chưa làm
+    const totalQuestions = examData.questions.length;
+    const answeredQuestions = Object.keys(userAnswers).filter(qid => {
+      const answer = userAnswers[qid];
+      return Array.isArray(answer) ? answer.length > 0 : answer !== null && answer !== '';
+    }).length;
+    const unansweredQuestions = totalQuestions - answeredQuestions;
+
+    // Tạo thông báo chi tiết
+    const message = `Đã hết thời gian làm bài!\n\n` +
+      `Tổng số câu hỏi: ${totalQuestions}\n` +
+      `Số câu đã làm: ${answeredQuestions}\n` +
+      `Số câu chưa làm: ${unansweredQuestions}\n\n` +
+      `Bài thi của bạn đã được nộp tự động.`;
+
+    // Gọi hàm nộp bài với thông báo
+    submitExamLogic(message);
   };
 
   const handleQuestionSelect = (index) => {
@@ -158,8 +178,14 @@ const ExamTakingPage = () => {
     });
   };
 
-  const handleSubmitExam = () => {
-    console.log("Người dùng yêu cầu nộp bài.");
+  const handleSubmitExam = async () => {
+    try {
+      const response = await apiClient.post(
+        
+      )
+    } catch (error){
+      console.log(error);
+    }
   };
 
   const submitExamLogic = (message) => {

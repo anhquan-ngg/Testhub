@@ -8,18 +8,27 @@ import {Input} from '@/components/ui/input';
 import { apiClient } from '@/lib/api-client';
 import { useAppStore } from '@/store';
 import {LOGIN_ROUTE} from '@/utils/constants';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {toast} from 'sonner';
 import { Link } from "react-router-dom";
 
-
 const Login = () => {
   const navigate = useNavigate();
-  const {setUserInfo} = useAppStore();
+  const {userInfo, setUserInfo} = useAppStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (userInfo) {
+      if (userInfo.role === 'student') {
+        navigate('/student/exams');
+      } else if (userInfo.role === 'admin') {
+        navigate('/admin/dashboard');
+      }
+    }
+  }, [userInfo, navigate]);
 
   const validateLogin = () => {
     if (!email.length){
@@ -35,7 +44,6 @@ const Login = () => {
     return true;
   }
 
-
   const handleLogin = async () => {
     if (validateLogin()){
       try {
@@ -46,9 +54,6 @@ const Login = () => {
         );
         if (res.data.user.id){
           setUserInfo(res.data.user);
-          if (res.data.user.role == "student"){
-            navigate('/exams');
-          }
         }
       } catch (error) {
         const message = error.response?.data?.message || 'Đăng nhập thất bại';

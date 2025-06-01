@@ -1,5 +1,4 @@
 export const HOST = import.meta.env.VITE_SERVER_URL;
-import ProfileContainer from './../pages/home/components/profile-container/index';
 
 export const AUTH_ROUTE = "api/auth";
 export const LOGIN_ROUTE = `${AUTH_ROUTE}/login`;
@@ -31,7 +30,7 @@ export const ADD_QUESTION_TO_EXAM_ROUTE = `${EXAMS_ROUTE}/add-question-to-exam/:
 export const GET_LIST_QUESTION_OF_EXAM_ROUTE = `${EXAMS_ROUTE}list-question-of-exam/:id`; // Teacher/ Student
 export const DELETE_QUESTION_FROM_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-question-from-exam/:id`; // Teacher
 
-export const ADD_SUBMISSION_ROUTE = `${EXAMS_ROUTE}/submission/:id`; // Teacher
+export const ADD_SUBMISSION_ROUTE = `${EXAMS_ROUTE}/submission/:id`; // Student
 export const GET_LIST_SUBMISSION_ROUTE = `${EXAMS_ROUTE}/list-submission/:id`; // Teacher
 export const GET_DETAIL_SUBMISSION_ROUTE = `${EXAMS_ROUTE}/detail-submission/:id`; // Teacher/Student
 

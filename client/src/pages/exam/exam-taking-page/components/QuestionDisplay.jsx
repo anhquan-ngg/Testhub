@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Flag } from 'lucide-react';
+import { BlockMath } from 'react-katex';
 
 const QuestionDisplay = ({
   question,
@@ -37,7 +38,7 @@ const QuestionDisplay = ({
 
   const renderOptions = () => {
     switch (question.type) {
-      case 'multiple-choice-single':
+      case 'single-choice':
         return (
           <RadioGroup
             value={userAnswer || ""}
@@ -54,7 +55,7 @@ const QuestionDisplay = ({
             ))}
           </RadioGroup>
         );
-      case 'multiple-choice-multiple':
+      case 'multiple-choice':
         return (
           <div className="space-y-2">
             {question.options.map((option) => (

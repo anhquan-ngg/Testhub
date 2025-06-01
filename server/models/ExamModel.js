@@ -8,7 +8,7 @@ const Exam = sequelize.define("Exam", {
         autoIncrement: true,
         allowNull: false,
     },
-    name: {
+    title: {
         type: DataTypes.STRING,
         allowNull: false,
     },

@@ -6,14 +6,14 @@ import {Input} from '@/components/ui/input';
 import { apiClient } from '@/lib/api-client';
 import { useAppStore } from '@/store';
 import {SIGNUP_ROUTE } from '@/utils/constants';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {toast} from 'sonner';
 import {Link} from 'react-router-dom';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const {setUserInfo} = useAppStore();
+  const {userInfo, setUserInfo} = useAppStore();
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -21,6 +21,17 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    if (userInfo) {
+      if (userInfo.role === 'student'){
+        navigate('/student/exams');
+      } else if (userInfo.role === 'admin'){
+        navigate('/admin/dashboard');
+      }
+    }
+  }, [userInfo, navigate]);
+
 
   const validateSignup = () => {
     if (!fullname.length){
@@ -56,7 +67,6 @@ const Signup = () => {
         );
         if (res.status == 201){
           setUserInfo(res.data.user);
-          navigate('/profile');
         }
         toast.info('Đăng ký thành công');
       } catch (error) {

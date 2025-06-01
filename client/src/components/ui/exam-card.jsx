@@ -39,7 +39,7 @@ const ExamCard = ({exam}) => {
                                     ? 
                                     <Button 
                                         className = "text-base text-bold text-muted-foreground bg-[#2eb553] text-white hover: cursor-pointer"
-                                        onClick = {() => navigate(`/exams/${exam.id}`)}
+                                        onClick = {() => navigate(`/student/exams/${exam.id}/take`)}
                                     >
                                         Vào thi
                                     </Button>
@@ -52,4 +52,4 @@ const ExamCard = ({exam}) => {
   )
 }
 
-export default ExamCard
+export default ExamCard;

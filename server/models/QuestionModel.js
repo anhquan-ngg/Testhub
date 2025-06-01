@@ -1,5 +1,6 @@
 import { DataTypes, DATE } from 'sequelize';
 import sequelize from '../db.js';
+import { text } from 'express';
 
 const Question = sequelize.define('Question', {
     id: {
@@ -8,7 +9,7 @@ const Question = sequelize.define('Question', {
         autoIncrement: true,
         allowNull: false
     },
-    content: {
+    text: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -19,6 +20,10 @@ const Question = sequelize.define('Question', {
     type: {
         type: DataTypes.ENUM('single-choice', 'multiple-choice', 'fill-in-blank'),
         allowNull: false
+    },
+    options: {
+        type: DataTypes.ARRAY(DataTypes.JSON),
+        allowNull: true
     },
     correctAnswer: {
         type: DataTypes.STRING,

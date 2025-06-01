@@ -15,7 +15,7 @@ const Choice = sequelize.define('Choice', {
             key: 'id'
         }
     },
-    content: {
+    text: {
         type: DataTypes.STRING,
         allowNull: false,
     },
