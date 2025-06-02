@@ -18,7 +18,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../../components/ui/dialog';
-import { Plus, Search, Edit, Trash2, UserPlus } from 'lucide-react';
+import { Search, Edit, Trash2, UserPlus } from 'lucide-react';
+import { GET_LIST_USERS_ROUTE, ADD_USER_ROUTE, PATCH_USER_ROUTE, DELETE_USER_ROUTE } from '@/utils/constants';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -31,9 +32,9 @@ const UserManagement = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
-    fullName: '',
+    full_name: '',
+    pasword: '',
     role: 'student',
-    status: 'active'
   });
 
   useEffect(() => {
@@ -43,25 +44,15 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // Trong thực tế, thay thế bằng API call
-      // const response = await apiClient.get('/api/admin/users', {
-      //   params: {
-      //     page: currentPage,
-      //     search: searchTerm,
-      //     role: roleFilter !== 'all' ? roleFilter : undefined
-      //   }
-      // });
-      
-      // Dữ liệu mẫu
-      const mockUsers = [
-        { id: 1, email: 'student1@example.com', fullName: 'Nguyễn Văn A', role: 'student', status: 'active', createdAt: '2024-01-01' },
-        { id: 2, email: 'student2@example.com', fullName: 'Trần Thị B', role: 'student', status: 'active', createdAt: '2024-01-02' },
-        { id: 3, email: 'admin@example.com', fullName: 'Lê Văn C', role: 'admin', status: 'active', createdAt: '2024-01-03' },
-        { id: 4, email: 'student3@example.com', fullName: 'Phạm Thị D', role: 'student', status: 'inactive', createdAt: '2024-01-04' },
-      ];
-
-      setUsers(mockUsers);
-      setTotalPages(2); // Giả sử có 2 trang
+      const response = await apiClient.get(GET_LIST_USERS_ROUTE,
+        {
+          withCredentials: true
+        }
+      );
+      if (response.status === 200) {
+        setUsers(response.data);
+        setTotalPages(Math.ceil(response.data.length / 5));
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -80,23 +71,22 @@ const UserManagement = () => {
   };
 
   const handleAddUser = () => {
-    setSelectedUser(null);
+    setShowDialog(true);
     setFormData({
       email: '',
-      fullName: '',
+      full_name: '',
+      password: '',
       role: 'student',
-      status: 'active'
     });
-    setShowDialog(true);
   };
 
   const handleEditUser = (user) => {
     setSelectedUser(user);
     setFormData({
       email: user.email,
-      fullName: user.fullName,
+      full_name: user.full_name,
+      password: '',
       role: user.role,
-      status: user.status
     });
     setShowDialog(true);
   };
@@ -104,7 +94,10 @@ const UserManagement = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
       try {
-        // await apiClient.delete(`/api/admin/users/${userId}`);
+        const response = await apiClient.delete(
+          `${DELETE_USER_ROUTE}/${userId}`,
+          {withCredentials: true}
+        )
         setUsers(users.filter(user => user.id !== userId));
       } catch (error) {
         console.error('Error deleting user:', error);
@@ -117,14 +110,16 @@ const UserManagement = () => {
     try {
       if (selectedUser) {
         // Cập nhật người dùng
-        // await apiClient.put(`/api/admin/users/${selectedUser.id}`, formData);
+        const response = await apiClient.patch(`${PATCH_USER_ROUTE}/${selectedUser.id}`, formData, {withCredentials: true})   ;
         setUsers(users.map(user => 
           user.id === selectedUser.id ? { ...user, ...formData } : user
         ));
       } else {
         // Thêm người dùng mới
-        // const response = await apiClient.post('/api/admin/users', formData);
-        setUsers([...users, { id: Date.now(), ...formData, createdAt: new Date().toISOString() }]);
+        const response = await apiClient.post(ADD_USER_ROUTE, formData, {withCredentials: true});
+        if (response.status === 200) {
+          setUsers([...users, { id: Date.now(), ...formData, createdAt: new Date().toISOString() }]);
+        }
       }
       setShowDialog(false);
     } catch (error) {
@@ -149,7 +144,10 @@ const UserManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Quản lý người dùng</h1>
-        <Button onClick={handleAddUser}>
+        <Button 
+          className="bg-black text-white"
+          onClick={handleAddUser}
+        >
           <UserPlus className="mr-2 h-4 w-4" />
           Thêm người dùng
         </Button>
@@ -184,7 +182,6 @@ const UserManagement = () => {
             <TableRow>
               <TableHead>Người dùng</TableHead>
               <TableHead>Vai trò</TableHead>
-              <TableHead>Trạng thái</TableHead>
               <TableHead>Ngày tạo</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
@@ -202,17 +199,12 @@ const UserManagement = () => {
               users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    <div className="font-medium">{user.fullName}</div>
+                    <div className="font-medium">{user.full_name}</div>
                     <div className="text-sm text-muted-foreground">{user.email}</div>
                   </TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(user.role)}`}>
                       {user.role === 'admin' ? 'Admin' : 'Học viên'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(user.status)}`}>
-                      {user.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -266,7 +258,7 @@ const UserManagement = () => {
 
       {/* Add/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white border-none shadow-lg">
           <DialogHeader>
             <DialogTitle>
               {selectedUser ? 'Chỉnh sửa người dùng' : 'Thêm người dùng mới'}
@@ -293,8 +285,19 @@ const UserManagement = () => {
               </label>
               <Input
                 type="text"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Mật khẩu
+              </label>
+              <Input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
             </div>
@@ -307,28 +310,18 @@ const UserManagement = () => {
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
               >
-                <option value="student">Học viên</option>
                 <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Trạng thái
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors"
-              >
-                <option value="active">Hoạt động</option>
-                <option value="inactive">Không hoạt động</option>
+                <option value="student">Sinh viên</option>
               </select>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
                 Hủy
               </Button>
-              <Button type="submit">
+              <Button 
+                className="bg-black text-white"
+                type="submit"
+              >
                 {selectedUser ? 'Cập nhật' : 'Thêm mới'}
               </Button>
             </DialogFooter>

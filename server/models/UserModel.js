@@ -52,4 +52,11 @@ User.beforeCreate(async (User, options) => {
   User.password = await hash(User.password, salt);
 });
 
+User.beforeUpdate(async (User, options) => {
+  if (User.password) {
+    const salt = await genSalt(10);
+    User.password = await hash(User.password, salt);
+  }
+});
+
 export default User;

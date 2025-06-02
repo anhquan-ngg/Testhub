@@ -9,9 +9,10 @@ export const UPDATE_USER_INFO_ROUTE = `${AUTH_ROUTE}/update-user-info`;
 
 export const USERS_ROUTE = "api/users"; 
 export const GET_LIST_USERS_ROUTE = `${USERS_ROUTE}/list-users`;  // Admin
-export const GET_DETAIL_USER_ROUTE = `${USERS_ROUTE}/detail-user/:id`; // Admin / Teacher
-export const PATCH_USER_ROUTE = `${USERS_ROUTE}/patch-user/:id`;   // Admin / Self
-export const DELETE_USER_ROUTE = `${USERS_ROUTE}/delete-user/:id`; // Admin
+export const ADD_USER_ROUTE = `${USERS_ROUTE}/add-user`; // Admin
+export const GET_DETAIL_USER_ROUTE = `${USERS_ROUTE}/detail-user`; // Admin / Teacher
+export const PATCH_USER_ROUTE = `${USERS_ROUTE}/patch-user`;   // Admin / Self
+export const DELETE_USER_ROUTE = `${USERS_ROUTE}/delete-user`; // Admin
 
 export const EXAMS_ROUTE = "api/exams";
 export const GET_LIST_EXAMS_ROUTE = `${EXAMS_ROUTE}/list-exams`; // Teacher / Student

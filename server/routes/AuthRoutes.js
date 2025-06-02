@@ -8,8 +8,8 @@ authRoutes.post('/signup', signup);
 authRoutes.post('/login', login);
 authRoutes.post('/logout', logout);
 authRoutes.get('/user-info', verifyToken, getUserInfo);
-
 // UPDATE USER INFO
 authRoutes.put('/update-user-info', verifyToken, updateUserInfo);
+
 
 export default authRoutes;

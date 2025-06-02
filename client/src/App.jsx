@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-d
 import { useAppStore } from './store/index';
 import { apiClient } from './lib/api-client';
 import { GET_USER_INFO_ROUTE } from './utils/constants';
+import { Toaster } from 'react-hot-toast';
 
 // Auth pages
 import Login from './pages/auth/login';
@@ -81,6 +82,7 @@ const App = () => {
 
   return (
     <Router>
+      <Toaster position="top-right" />
       <Routes>
         {/* Home route
         <Route path="/" element={<Home />} /> */}

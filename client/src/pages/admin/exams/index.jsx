@@ -162,7 +162,10 @@ const ExamManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-semibold">Quản lý bài thi</h1>
-        <Button onClick={handleCreateExam}>
+        <Button 
+          className="bg-black text-white"
+          onClick={handleCreateExam}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Tạo bài thi mới
         </Button>
@@ -296,7 +299,7 @@ const ExamManagement = () => {
 
       {/* Details Dialog */}
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent>
+        <DialogContent className="bg-white border-none shadow-lg">
           <DialogHeader>
             <DialogTitle>Chi tiết bài thi</DialogTitle>
             <DialogDescription>
