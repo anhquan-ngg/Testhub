@@ -12,9 +12,9 @@ export const getAllUsers = async (req, res, next) => {
 
 export const addUser = async (req, res, next) => {
     try {
-        const {email, password, full_name, role} = req.body;
+        const {full_name, email, password, role} = req.body;
         const user = await User.create({email, password, full_name, role});
-        return res.status(200).json(user);
+        return res.status(201).json(user);
     } catch (error) {
         console.log(error);
         return res.status(500).json({message: "Server bị lỗi"});
@@ -24,13 +24,13 @@ export const addUser = async (req, res, next) => {
 export const patchUser = async (req, res, next) => {
     try {
         const {id} = req.params;
-        const {email, password, full_name, role} = req.body;
+        const {full_name, email, password, role} = req.body;
         const user = await User.findByPk(id);
         if (!user) {
             return res.status(404).json({message: "User không tồn tại"});
         }
-        await user.update({email, password, full_name, role});
-        console.log(user);        return res.status(200).json(user);
+        await user.update({full_name, email, password, role});
+        return res.status(200).json(user);
     } catch (error) {
         console.log(error);
         return res.status(500).json({message: "Server bị lỗi"});

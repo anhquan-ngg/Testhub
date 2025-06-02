@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -22,7 +22,8 @@ import { Search, Edit, Trash2, UserPlus } from 'lucide-react';
 import { GET_LIST_USERS_ROUTE, ADD_USER_ROUTE, PATCH_USER_ROUTE, DELETE_USER_ROUTE } from '@/utils/constants';
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]); // Dữ liệu gốc
+  const [filteredUsers, setFilteredUsers] = useState([]); // Dữ liệu đã lọc
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -31,15 +32,44 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
     full_name: '',
-    pasword: '',
+    email: '',
+    password: '',
     role: 'student',
   });
 
+  // Hàm lọc users
+  const filterUsers = useCallback(() => {
+    let result = [...users];
+
+    // Lọc theo search term
+    if (searchTerm) {
+      const searchValue = searchTerm.toLowerCase();
+      result = result.filter(user => {
+        const matchName = user.full_name.toLowerCase().includes(searchValue);
+        const matchEmail = user.email.toLowerCase().includes(searchValue);
+        return matchName || matchEmail;
+      });
+    }
+
+    // Lọc theo role
+    if (roleFilter !== 'all') {
+      result = result.filter(user => user.role === roleFilter);
+    }
+
+    setFilteredUsers(result);
+    setTotalPages(Math.ceil(result.length / 5));
+    setCurrentPage(1);
+  }, [users, searchTerm, roleFilter]);
+
+  // Gọi hàm lọc mỗi khi users, searchTerm hoặc roleFilter thay đổi
+  useEffect(() => {
+    filterUsers();
+  }, [filterUsers]);
+
   useEffect(() => {
     fetchUsers();
-  }, [currentPage, searchTerm, roleFilter]);
+  }, []);
 
   const fetchUsers = async () => {
     try {
@@ -51,6 +81,7 @@ const UserManagement = () => {
       );
       if (response.status === 200) {
         setUsers(response.data);
+        setFilteredUsers(response.data);
         setTotalPages(Math.ceil(response.data.length / 5));
       }
     } catch (error) {
@@ -62,19 +93,17 @@ const UserManagement = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1);
   };
 
   const handleRoleFilter = (e) => {
     setRoleFilter(e.target.value);
-    setCurrentPage(1);
   };
 
   const handleAddUser = () => {
     setShowDialog(true);
     setFormData({
-      email: '',
       full_name: '',
+      email: '',
       password: '',
       role: 'student',
     });
@@ -83,8 +112,8 @@ const UserManagement = () => {
   const handleEditUser = (user) => {
     setSelectedUser(user);
     setFormData({
-      email: user.email,
       full_name: user.full_name,
+      email: user.email,
       password: '',
       role: user.role,
     });
@@ -94,7 +123,7 @@ const UserManagement = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
       try {
-        const response = await apiClient.delete(
+        await apiClient.delete(
           `${DELETE_USER_ROUTE}/${userId}`,
           {withCredentials: true}
         )
@@ -111,13 +140,15 @@ const UserManagement = () => {
       if (selectedUser) {
         // Cập nhật người dùng
         const response = await apiClient.patch(`${PATCH_USER_ROUTE}/${selectedUser.id}`, formData, {withCredentials: true})   ;
-        setUsers(users.map(user => 
-          user.id === selectedUser.id ? { ...user, ...formData } : user
-        ));
+        if (response.status === 200) {
+          setUsers(users.map(user => 
+            user.id === selectedUser.id ? { ...user, ...formData } : user
+          ));
+        }
       } else {
         // Thêm người dùng mới
         const response = await apiClient.post(ADD_USER_ROUTE, formData, {withCredentials: true});
-        if (response.status === 200) {
+        if (response.status === 201) {
           setUsers([...users, { id: Date.now(), ...formData, createdAt: new Date().toISOString() }]);
         }
       }
@@ -196,38 +227,41 @@ const UserManagement = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="font-medium">{user.full_name}</div>
-                    <div className="text-sm text-muted-foreground">{user.email}</div>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(user.role)}`}>
-                      {user.role === 'admin' ? 'Admin' : 'Học viên'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(user.createdAt).toLocaleDateString('vi-VN')}
-                  </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditUser(user)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteUser(user.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+              // Hiển thị dữ liệu đã lọc thay vì users
+              filteredUsers
+                .slice((currentPage - 1) * 5, currentPage * 5)
+                .map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div className="font-medium">{user.full_name}</div>
+                      <div className="text-sm text-muted-foreground">{user.email}</div>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(user.role)}`}>
+                        {user.role === 'admin' ? 'Admin' : 'Học viên'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditUser(user)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteUser(user.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
             )}
           </TableBody>
         </Table>
@@ -270,23 +304,23 @@ const UserManagement = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                Email
-              </label>
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Họ và tên
               </label>
               <Input
                 type="text"
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Email
+              </label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
             </div>

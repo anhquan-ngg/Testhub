@@ -96,7 +96,7 @@ const AdminLayout = () => {
 
           <Button
             variant="outline"
-            className="justify-start gap-2 cursor-pointer"
+            className="justify-start bg-black text-white gap-2 cursor-pointer"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4" />

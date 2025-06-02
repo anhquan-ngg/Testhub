@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,21 +41,24 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { apiClient } from '@/lib/api-client';
+import { ADD_EXAM_ROUTE } from '@/utils/constants';
+import { useAppStore } from '@/store/index';
+import { toast } from 'react-hot-toast';
 
 // Validation schema cho form tạo bài thi
 const examSchema = z.object({
   title: z.string().min(1, 'Vui lòng nhập tiêu đề bài thi'),
-  subject: z.string().min(1, 'Vui lòng chọn môn học'),
-  description: z.string(),
+  subject: z.string().min(1, ),
   duration: z.number().min(1, 'Thời gian thi phải lớn hơn 0'),
-  startTime: z.string().min(1, 'Vui lòng chọn thời gian bắt đầu'),
-  endTime: z.string().min(1, 'Vui lòng chọn thời gian kết thúc'),
+  start_time: z.string().min(1, 'Vui lòng chọn thời gian bắt đầu'),
+  end_time: z.string().min(1, 'Vui lòng chọn thời gian kết thúc'),
 });
 
 // Validation schema cho form tạo câu hỏi
 const questionSchema = z.object({
   content: z.string().min(1, 'Vui lòng nhập nội dung câu hỏi'),
-  type: z.enum(['single', 'multiple']),
+  type: z.enum(['single-choice', 'multiple-choice', 'fill-in-blank']),
   options: z.array(z.object({
     content: z.string().min(1, 'Vui lòng nhập nội dung đáp án'),
     isCorrect: z.boolean(),
@@ -63,10 +66,25 @@ const questionSchema = z.object({
   score: z.number().min(0, 'Điểm số không được âm'),
 });
 
+const questionTypeMap = {
+  'single-choice': 'Một đáp án',
+  'multiple-choice': 'Nhiều đáp án',
+  'fill-in-blank': 'Tự luận'
+};
+
 const CreateExam = () => {
   const navigate = useNavigate();
+  const { userInfo } = useAppStore();
   const [questions, setQuestions] = useState([]);
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    subject: '',
+    duration: 60,
+    start_time: '',
+    end_time: '',
+    questions: []
+  });
 
   // Form cho bài thi
   const examForm = useForm({
@@ -74,10 +92,9 @@ const CreateExam = () => {
     defaultValues: {
       title: '',
       subject: '',
-      description: '',
       duration: 60,
-      startTime: '',
-      endTime: '',
+      start_time: '',
+      end_time: '',
     },
   });
 
@@ -86,7 +103,7 @@ const CreateExam = () => {
     resolver: zodResolver(questionSchema),
     defaultValues: {
       content: '',
-      type: 'single',
+      type: 'single-choice',
       options: [
         { content: '', isCorrect: false },
         { content: '', isCorrect: false },
@@ -95,22 +112,97 @@ const CreateExam = () => {
     },
   });
 
+  // Theo dõi thay đổi của form và cập nhật formData
+  useEffect(() => {
+    const subscription = examForm.watch((value) => {
+      setFormData(prev => ({
+        ...prev,
+        ...value,
+        questions: questions
+      }));
+    });
+    return () => subscription.unsubscribe();
+  }, [examForm, questions]);
+
   // Xử lý submit form bài thi
   const onSubmitExam = async (data) => {
     try {
-      // TODO: Gọi API tạo bài thi
-      console.log('Exam data:', { ...data, questions });
-      navigate('/admin/exams');
+
+      // Chuẩn bị dữ liệu gửi lên
+      const examData = {
+        ...data,
+        teacher_id: userInfo.id,
+        questions: questions.map((q, index) => ({
+          ...q,
+          order: index + 1
+        }))
+      };
+
+      const response = await apiClient.post(
+        ADD_EXAM_ROUTE, 
+        examData,
+        {withCredentials: true}
+      );
+
+      if (response.status === 201) {
+        toast.success("Tạo bài thi thành công");
+        navigate('/admin/exams');
+      }
     } catch (error) {
       console.error('Error creating exam:', error);
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra khi tạo bài thi");
     }
   };
 
   // Xử lý submit form câu hỏi
   const onSubmitQuestion = (data) => {
-    setQuestions([...questions, { ...data, id: Date.now() }]);
+    const newQuestion = {
+      ...data,
+      id: Date.now(),
+      order: questions.length + 1
+    };
+
+    setQuestions(prev => [...prev, newQuestion]);
+    setFormData(prev => ({
+      ...prev,
+      questions: [...prev.questions, newQuestion]
+    }));
+
     setShowQuestionDialog(false);
     questionForm.reset();
+  };
+
+  // Xử lý xóa câu hỏi
+  const handleDeleteQuestion = (questionId) => {
+    setQuestions(prev => {
+      const newQuestions = prev.filter(q => q.id !== questionId);
+      // Cập nhật lại order sau khi xóa
+      return newQuestions.map((q, index) => ({
+        ...q,
+        order: index + 1
+      }));
+    });
+  };
+
+  // Xử lý kéo thả câu hỏi
+  const onDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(questions);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    // Cập nhật lại order sau khi kéo thả
+    const updatedItems = items.map((item, index) => ({
+      ...item,
+      order: index + 1
+    }));
+
+    setQuestions(updatedItems);
+    setFormData(prev => ({
+      ...prev,
+      questions: updatedItems
+    }));
   };
 
   // Xử lý thêm/xóa đáp án
@@ -122,17 +214,6 @@ const CreateExam = () => {
   const removeOption = (index) => {
     const options = questionForm.getValues('options');
     questionForm.setValue('options', options.filter((_, i) => i !== index));
-  };
-
-  // Xử lý kéo thả câu hỏi
-  const onDragEnd = (result) => {
-    if (!result.destination) return;
-
-    const items = Array.from(questions);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    setQuestions(items);
   };
 
   return (
@@ -177,7 +258,7 @@ const CreateExam = () => {
                             <SelectValue placeholder="Chọn môn học" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="bg-white border-none shadow-lg">
                           <SelectItem value="math">Toán</SelectItem>
                           <SelectItem value="physics">Vật lý</SelectItem>
                           <SelectItem value="chemistry">Hóa học</SelectItem>
@@ -188,21 +269,6 @@ const CreateExam = () => {
                     </FormItem>
                   )}
                 />
-
-                <FormField
-                  control={examForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mô tả</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={examForm.control}
@@ -222,7 +288,7 @@ const CreateExam = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={examForm.control}
-                    name="startTime"
+                    name="start_time"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Thời gian bắt đầu</FormLabel>
@@ -236,7 +302,7 @@ const CreateExam = () => {
 
                   <FormField
                     control={examForm.control}
-                    name="endTime"
+                    name="end_time"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Thời gian kết thúc</FormLabel>
@@ -312,15 +378,18 @@ const CreateExam = () => {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Loại câu hỏi</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue />
+                                  <SelectValue>
+                                    {field.value ? questionTypeMap[field.value] : 'Chọn loại câu hỏi'}
+                                  </SelectValue>
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent>
-                                <SelectItem value="single">Một đáp án</SelectItem>
-                                <SelectItem value="multiple">Nhiều đáp án</SelectItem>
+                              <SelectContent className="bg-white border-none shadow-lg">
+                                <SelectItem value="single-choice">Một đáp án</SelectItem>
+                                <SelectItem value="multiple-choice">Nhiều đáp án</SelectItem>
+                                <SelectItem value="fill-in-blank">Tự luận</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -329,40 +398,78 @@ const CreateExam = () => {
                       />
 
                       <div className="space-y-4">
-                        <FormLabel>Đáp án</FormLabel>
-                        {questionForm.watch('options').map((option, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              value={option.content}
-                              onChange={(e) => {
-                                const options = questionForm.getValues('options');
-                                options[index].content = e.target.value;
-                                questionForm.setValue('options', options);
-                              }}
-                              placeholder={`Đáp án ${index + 1}`}
-                            />
-                            <input
-                              type="checkbox"
-                              checked={option.isCorrect}
-                              onChange={(e) => {
-                                const options = questionForm.getValues('options');
-                                options[index].isCorrect = e.target.checked;
-                                questionForm.setValue('options', options);
-                              }}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeOption(index)}
+                        {/* Chỉ hiển thị phần đáp án cho câu hỏi trắc nghiệm */}
+                        {(questionForm.watch('type') === 'single-choice' || 
+                          questionForm.watch('type') === 'multiple-choice') && (
+                          <>
+                            <FormLabel>Đáp án</FormLabel>
+                            {questionForm.watch('options').map((option, index) => (
+                              <div key={index} className="flex gap-2">
+                                <Input
+                                  value={option.content}
+                                  onChange={(e) => {
+                                    const options = questionForm.getValues('options');
+                                    options[index].content = e.target.value;
+                                    questionForm.setValue('options', options);
+                                  }}
+                                  placeholder={`Đáp án ${index + 1}`}
+                                />
+                                <input
+                                  type={questionForm.watch('type') === 'single-choice' ? 'radio' : 'checkbox'}
+                                  name="correct-answer"
+                                  checked={option.isCorrect}
+                                  onChange={(e) => {
+                                    const options = questionForm.getValues('options');
+                                    // Nếu là single-choice, chỉ cho phép chọn 1 đáp án đúng
+                                    if (questionForm.watch('type') === 'single-choice') {
+                                      options.forEach((opt, i) => {
+                                        opt.isCorrect = i === index;
+                                      });
+                                    } else {
+                                      options[index].isCorrect = e.target.checked;
+                                    }
+                                    questionForm.setValue('options', options);
+                                  }}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeOption(index)}
+                                  disabled={questionForm.watch('options').length <= 2}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={addOption}
+                              className="w-full"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Plus className="h-4 w-4 mr-2" />
+                              Thêm đáp án
                             </Button>
-                          </div>
-                        ))}
-                        <Button type="button" variant="outline" onClick={addOption}>
-                          Thêm đáp án
-                        </Button>
+                          </>
+                        )}
+
+                        {/* Hiển thị textarea cho câu hỏi tự luận */}
+                        {questionForm.watch('type') === 'fill-in-blank' && (
+                          <FormField
+                            control={questionForm.control}
+                            name="answer"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Đáp án mẫu</FormLabel>
+                                <FormControl>
+                                  <Textarea {...field} placeholder="Nhập đáp án mẫu cho câu hỏi" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
                       </div>
 
                       <FormField
@@ -429,7 +536,7 @@ const CreateExam = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => {
-                                  setQuestions(questions.filter((q) => q.id !== question.id));
+                                  handleDeleteQuestion(question.id);
                                 }}
                               >
                                 <Trash2 className="h-4 w-4" />

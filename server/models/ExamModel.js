@@ -16,7 +16,7 @@ const Exam = sequelize.define("Exam", {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    teacherId: {
+    teacher_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -38,11 +38,11 @@ const Exam = sequelize.define("Exam", {
     },
     status: {
         type: DataTypes.ENUM('pending', 'active', 'finished'),
-        allowNull: false,
+        allowNull: true,
     },
 }, {
     tableName: 'exams',
-    timestamps: true
+    timestamps: false
 })
 
 export default Exam;

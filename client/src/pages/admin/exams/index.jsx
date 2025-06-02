@@ -20,6 +20,46 @@ import {
   DialogTitle,
 } from '../../../components/ui/dialog';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
+import { GET_LIST_EXAMS_ROUTE } from '../../../utils/constants';
+
+const mockExams = [
+  {
+    id: 1,
+    title: 'Bài thi đánh giá tư duy lần 1',
+    subject: 'Toán',
+    duration: 60,
+    totalQuestions: 30,
+    status: 'upcoming',
+    startTime: '2024-03-20T08:00:00',
+    endTime: '2024-03-20T09:00:00',
+    createdAt: '2024-03-01',
+    participants: 25
+  },
+  {
+    id: 2,
+    title: 'Bài thi đánh giá tư duy lần 2',
+    subject: 'Tiếng Anh',
+    duration: 45,
+    totalQuestions: 40,
+    status: 'active',
+    startTime: '2024-03-15T10:00:00',
+    endTime: '2024-03-15T11:00:00',
+    createdAt: '2024-03-02',
+    participants: 30
+  },
+  {
+    id: 3,
+    title: 'Bài thi đánh giá tư duy lần 3',
+    subject: 'Vật lý',
+    duration: 90,
+    totalQuestions: 35,
+    status: 'completed',
+    startTime: '2024-03-10T14:00:00',
+    endTime: '2024-03-10T15:30:00',
+    createdAt: '2024-03-03',
+    participants: 20
+  }
+];
 
 const ExamManagement = () => {
   const navigate = useNavigate();
@@ -39,57 +79,10 @@ const ExamManagement = () => {
   const fetchExams = async () => {
     try {
       setLoading(true);
-      // Trong thực tế, thay thế bằng API call
-      // const response = await apiClient.get('/api/admin/exams', {
-      //   params: {
-      //     page: currentPage,
-      //     search: searchTerm,
-      //     status: statusFilter !== 'all' ? statusFilter : undefined
-      //   }
-      // });
-
-      // Dữ liệu mẫu
-      const mockExams = [
-        {
-          id: 1,
-          title: 'Bài thi đánh giá tư duy lần 1',
-          subject: 'Toán',
-          duration: 60,
-          totalQuestions: 30,
-          status: 'upcoming',
-          startTime: '2024-03-20T08:00:00',
-          endTime: '2024-03-20T09:00:00',
-          createdAt: '2024-03-01',
-          participants: 25
-        },
-        {
-          id: 2,
-          title: 'Bài thi đánh giá tư duy lần 2',
-          subject: 'Tiếng Anh',
-          duration: 45,
-          totalQuestions: 40,
-          status: 'active',
-          startTime: '2024-03-15T10:00:00',
-          endTime: '2024-03-15T11:00:00',
-          createdAt: '2024-03-02',
-          participants: 30
-        },
-        {
-          id: 3,
-          title: 'Bài thi đánh giá tư duy lần 3',
-          subject: 'Vật lý',
-          duration: 90,
-          totalQuestions: 35,
-          status: 'completed',
-          startTime: '2024-03-10T14:00:00',
-          endTime: '2024-03-10T15:30:00',
-          createdAt: '2024-03-03',
-          participants: 20
-        }
-      ];
-
-      setExams(mockExams);
-      setTotalPages(2); // Giả sử có 2 trang
+      const response = await apiClient.get(GET_LIST_EXAMS_ROUTE, {withCredentials: true});
+      if (response.status === 200) {
+        setExams(response.data);
+      }
     } catch (error) {
       console.error('Error fetching exams:', error);
     } finally {
@@ -329,7 +322,11 @@ const ExamManagement = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDetailsDialog(false)}>
+            <Button 
+              className="bg-black text-white"
+              variant="outline" 
+              onClick={() => setShowDetailsDialog(false)}
+            >
               Đóng
             </Button>
           </DialogFooter>
