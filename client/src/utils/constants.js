@@ -16,16 +16,17 @@ export const DELETE_USER_ROUTE = `${USERS_ROUTE}/delete-user`; // Admin
 
 export const EXAMS_ROUTE = "api/exams";
 export const GET_LIST_EXAMS_ROUTE = `${EXAMS_ROUTE}/list-exams`; // Teacher / Student
-export const GET_DETAIL_EXAM_ROUTE = `${EXAMS_ROUTE}/detail-exam/:id`; // Teacher / Student
+export const GET_DETAIL_EXAM_ROUTE = `${EXAMS_ROUTE}/detail-exam`; // Teacher / Student
 export const ADD_EXAM_ROUTE = `${EXAMS_ROUTE}/add-exam`; // Teacher
 export const PATCH_EXAM_ROUTE = `${EXAMS_ROUTE}/patch-exam/:id`; // Teacher
-export const DELETE_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-exam/:id`; // Teacher
+export const DELETE_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-exam`; // Teacher
 
 export const QUESTION_ROUTE = "api/questions"; 
+export const GET_LIST_QUESTIONS_ROUTE = `${QUESTION_ROUTE}/list-questions`; // Teacher / Student
 export const ADD_QUESTION_ROUTE = `${QUESTION_ROUTE}/add-question`; // Teacher
-export const GET_DETAIL_QUESTION_ROUTE = `${QUESTION_ROUTE}/detail-question/:id`; // Teacher
-export const PATCH_QUESTION_ROUTE = `${QUESTION_ROUTE}/patch-question/:id`; // Teacher 
-export const DELETE_QUESTION_ROUTE = `${QUESTION_ROUTE}/delete-question/:id`; // Teacher
+export const GET_DETAIL_QUESTION_ROUTE = `${QUESTION_ROUTE}/detail-question`; // Teacher
+export const PATCH_QUESTION_ROUTE = `${QUESTION_ROUTE}/patch-question`; // Teacher 
+export const DELETE_QUESTION_ROUTE = `${QUESTION_ROUTE}/delete-question`; // Teacher
 
 export const ADD_QUESTION_TO_EXAM_ROUTE = `${EXAMS_ROUTE}/add-question-to-exam/:id`; // Teacher
 export const GET_LIST_QUESTION_OF_EXAM_ROUTE = `${EXAMS_ROUTE}list-question-of-exam/:id`; // Teacher/ Student

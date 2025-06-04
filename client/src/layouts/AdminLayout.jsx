@@ -14,10 +14,40 @@ import {
   LogOut,
   Menu,
   User,
+  FileQuestion,
+  Settings,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { apiClient } from '@/lib/api-client';
 import { LOGOUT_ROUTE } from '@/utils/constants';
+
+const menuItems = [
+  {
+    title: 'Tổng quan',
+    icon: LayoutDashboard,
+    href: '/admin/dashboard'
+  },
+  {
+    title: 'Quản lý bài thi',
+    icon: GraduationCap,
+    href: '/admin/exams'
+  },
+  {
+    title: 'Ngân hàng câu hỏi',
+    icon: FileQuestion,
+    href: '/admin/questions'
+  },
+  {
+    title: 'Quản lý người dùng',
+    icon: Users,
+    href: '/admin/users'
+  },
+  {
+    title: 'Cài đặt',
+    icon: Settings,
+    href: '/admin/settings'
+  }
+];
 
 const AdminLayout = () => {
   const { userInfo, setUserInfo } = useAppStore();
@@ -41,24 +71,6 @@ const AdminLayout = () => {
     }
   };
 
-  const navigation = [
-    {
-      name: 'Dashboard',
-      href: '/admin/dashboard',
-      icon: LayoutDashboard,
-    },
-    {
-      name: 'Quản lý người dùng',
-      href: '/admin/users',
-      icon: Users,
-    },
-    {
-      name: 'Quản lý bài thi',
-      href: '/admin/exams',
-      icon: GraduationCap,
-    },
-  ];
-
   const NavItem = ({ item, className }) => {
     const isActive = location.pathname === item.href;
     const Icon = item.icon;
@@ -73,7 +85,7 @@ const AdminLayout = () => {
         )}
       >
         <Icon className="h-4 w-4" />
-        <span>{item.name}</span>
+        <span>{item.title}</span>
       </Link>
     );
   };
@@ -89,8 +101,8 @@ const AdminLayout = () => {
           </div>
 
           <nav className="flex flex-1 flex-col gap-1">
-            {navigation.map((item) => (
-              <NavItem key={item.name} item={item} />
+            {menuItems.map((item) => (
+              <NavItem key={item.href} item={item} />
             ))}
           </nav>
 
@@ -122,9 +134,9 @@ const AdminLayout = () => {
                 </div>
 
                 <nav className="flex flex-1 flex-col gap-1">
-                  {navigation.map((item) => (
+                  {menuItems.map((item) => (
                     <NavItem
-                      key={item.name}
+                      key={item.href}
                       item={item}
                       className="w-full"
                       onClick={() => setOpen(false)}

@@ -20,46 +20,14 @@ import {
   DialogTitle,
 } from '../../../components/ui/dialog';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
-import { GET_LIST_EXAMS_ROUTE } from '../../../utils/constants';
+import { GET_LIST_EXAMS_ROUTE, DELETE_EXAM_ROUTE } from '../../../utils/constants';
 
-const mockExams = [
-  {
-    id: 1,
-    title: 'Bài thi đánh giá tư duy lần 1',
-    subject: 'Toán',
-    duration: 60,
-    totalQuestions: 30,
-    status: 'upcoming',
-    startTime: '2024-03-20T08:00:00',
-    endTime: '2024-03-20T09:00:00',
-    createdAt: '2024-03-01',
-    participants: 25
-  },
-  {
-    id: 2,
-    title: 'Bài thi đánh giá tư duy lần 2',
-    subject: 'Tiếng Anh',
-    duration: 45,
-    totalQuestions: 40,
-    status: 'active',
-    startTime: '2024-03-15T10:00:00',
-    endTime: '2024-03-15T11:00:00',
-    createdAt: '2024-03-02',
-    participants: 30
-  },
-  {
-    id: 3,
-    title: 'Bài thi đánh giá tư duy lần 3',
-    subject: 'Vật lý',
-    duration: 90,
-    totalQuestions: 35,
-    status: 'completed',
-    startTime: '2024-03-10T14:00:00',
-    endTime: '2024-03-10T15:30:00',
-    createdAt: '2024-03-03',
-    participants: 20
-  }
-];
+const subjectMap = {
+  'math': 'Toán',
+  'physics': 'Vật lí',
+  'english': 'Tiếng Anh', 
+  'chemistry': 'Hóa học'
+};
 
 const ExamManagement = () => {
   const navigate = useNavigate();
@@ -112,7 +80,13 @@ const ExamManagement = () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa bài thi này?')) {
       try {
         // await apiClient.delete(`/api/admin/exams/${examId}`);
-        setExams(exams.filter(exam => exam.id !== examId));
+        const response = await apiClient.delete(
+          `${DELETE_EXAM_ROUTE}/${examId}`, 
+          {withCredentials: true}
+        );
+        if (response.status === 200) {
+          setExams(exams.filter(exam => exam.id !== examId));
+        }
       } catch (error) {
         console.error('Error deleting exam:', error);
       }
@@ -214,7 +188,7 @@ const ExamManagement = () => {
                   <TableCell>
                     <div className="font-medium">{exam.title}</div>
                     <div className="text-sm text-muted-foreground">
-                      Môn: {exam.subject}
+                      Môn: {subjectMap[exam.subject] || exam.subject}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -232,9 +206,9 @@ const ExamManagement = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>{new Date(exam.startTime).toLocaleString('vi-VN')}</div>
+                    <div> Từ {new Date(exam.start_time).toLocaleString('vi-VN')}</div>
                     <div className="text-sm text-muted-foreground">
-                      đến {new Date(exam.endTime).toLocaleString('vi-VN')}
+                      Đến {new Date(exam.end_time).toLocaleString('vi-VN')}
                     </div>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
@@ -305,7 +279,7 @@ const ExamManagement = () => {
                 <h3 className="font-medium text-foreground">Thông tin chung</h3>
                 <div className="mt-2 space-y-2">
                   <p><span className="text-muted-foreground">Tên bài thi:</span> {selectedExam.title}</p>
-                  <p><span className="text-muted-foreground">Môn học:</span> {selectedExam.subject}</p>
+                  <p><span className="text-muted-foreground">Môn học:</span> {subjectMap[selectedExam.subject] || selectedExam.subject}</p>
                   <p><span className="text-muted-foreground">Thời gian làm bài:</span> {selectedExam.duration} phút</p>
                   <p><span className="text-muted-foreground">Số câu hỏi:</span> {selectedExam.totalQuestions}</p>
                 </div>
@@ -313,8 +287,8 @@ const ExamManagement = () => {
               <div>
                 <h3 className="font-medium text-foreground">Thời gian</h3>
                 <div className="mt-2 space-y-2">
-                  <p><span className="text-muted-foreground">Bắt đầu:</span> {new Date(selectedExam.startTime).toLocaleString('vi-VN')}</p>
-                  <p><span className="text-muted-foreground">Kết thúc:</span> {new Date(selectedExam.endTime).toLocaleString('vi-VN')}</p>
+                  <p><span className="text-muted-foreground">Bắt đầu:</span> {new Date(selectedExam.start_time).toLocaleString('vi-VN')}</p>
+                  <p><span className="text-muted-foreground">Kết thúc:</span> {new Date(selectedExam.end_time).toLocaleString('vi-VN')}</p>
                   <p><span className="text-muted-foreground">Ngày tạo:</span> {new Date(selectedExam.createdAt).toLocaleDateString('vi-VN')}</p>
                   <p><span className="text-muted-foreground">Số thí sinh:</span> {selectedExam.participants}</p>
                 </div>

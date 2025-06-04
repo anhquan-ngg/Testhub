@@ -202,7 +202,7 @@ const UserManagement = () => {
         >
           <option value="all">Tất cả vai trò</option>
           <option value="admin">Admin</option>
-          <option value="student">Học viên</option>
+          <option value="student">Sinh viên</option>
         </select>
       </div>
 
@@ -238,7 +238,7 @@ const UserManagement = () => {
                     </TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadgeClass(user.role)}`}>
-                        {user.role === 'admin' ? 'Admin' : 'Học viên'}
+                        {user.role === 'admin' ? 'Admin' : 'Sinh viên'}
                       </span>
                     </TableCell>
                     <TableCell>

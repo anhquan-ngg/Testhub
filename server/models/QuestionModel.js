@@ -13,7 +13,11 @@ const Question = sequelize.define('Question', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    imgUrl: {
+    subject: {
+        type: DataTypes.ENUM('math', 'english', 'physics', 'chemistry'),
+        allowNull: false
+    },
+    img_url: {
         type: DataTypes.STRING,
         allowNull: true
     },
@@ -22,14 +26,14 @@ const Question = sequelize.define('Question', {
         allowNull: false
     },
     options: {
-        type: DataTypes.ARRAY(DataTypes.JSON),
+        type: DataTypes.JSONB,
         allowNull: true
     },
-    correctAnswer: {
+    correct_answer: {
         type: DataTypes.STRING,
         allowNull: true
     },
-    create_by: {
+    created_by: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -39,7 +43,7 @@ const Question = sequelize.define('Question', {
     },
 }, {
     tableName: 'questions',
-    timestamps: true
+    timestamps: false
 })
 
 export default Question;

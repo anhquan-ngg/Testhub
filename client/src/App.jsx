@@ -20,6 +20,9 @@ import UserManagement from './pages/admin/users';
 import ExamManagement from './pages/admin/exams';
 import CreateExam from './pages/admin/exams/create';
 import EditExam from './pages/admin/exams/edit';
+import QuestionManagement from './pages/admin/questions';
+import CreateQuestion from './pages/admin/questions/create';
+import EditQuestion from './pages/admin/questions/edit';
 
 // Common pages
 // import Home from './pages/Home';
@@ -110,7 +113,10 @@ const App = () => {
           <Route path="users" element={<UserManagement />} />
           <Route path="exams" element={<ExamManagement />} />
           <Route path="exams/create" element={<CreateExam />} />
-          <Route path="exams/:examId/edit" element={<EditExam />} />
+          <Route path="exams/:id/edit" element={<EditExam />} />
+          <Route path="questions" element={<QuestionManagement />} />
+          <Route path="questions/create" element={<CreateQuestion />} />
+          <Route path="questions/:id/edit" element={<EditQuestion />} />
           <Route index element={<Navigate to="/admin/dashboard" />} />
         </Route>
 

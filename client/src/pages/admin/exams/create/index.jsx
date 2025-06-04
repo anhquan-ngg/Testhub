@@ -46,10 +46,13 @@ import { ADD_EXAM_ROUTE } from '@/utils/constants';
 import { useAppStore } from '@/store/index';
 import { toast } from 'react-hot-toast';
 
+
 // Validation schema cho form tạo bài thi
 const examSchema = z.object({
   title: z.string().min(1, 'Vui lòng nhập tiêu đề bài thi'),
-  subject: z.string().min(1, ),
+  subject: z.enum(['math', 'physics', 'english', 'chemistry'], {
+    required_error: 'Vui lòng chọn môn học'
+  }),
   duration: z.number().min(1, 'Thời gian thi phải lớn hơn 0'),
   start_time: z.string().min(1, 'Vui lòng chọn thời gian bắt đầu'),
   end_time: z.string().min(1, 'Vui lòng chọn thời gian kết thúc'),
@@ -65,6 +68,13 @@ const questionSchema = z.object({
   })).min(2, 'Phải có ít nhất 2 đáp án'),
   score: z.number().min(0, 'Điểm số không được âm'),
 });
+
+const subjectMap = {
+  'math': 'Toán',
+  'physics': 'Vật lí',
+  'english': 'Tiếng Anh', 
+  'chemistry': 'Hóa học'
+};
 
 const questionTypeMap = {
   'single-choice': 'Một đáp án',
@@ -127,14 +137,39 @@ const CreateExam = () => {
   // Xử lý submit form bài thi
   const onSubmitExam = async (data) => {
     try {
+      // Kiểm tra thời gian
+      const startTime = new Date(data.start_time);
+      const endTime = new Date(data.end_time);
+      
+      if (endTime <= startTime) {
+        toast.error("Thời gian kết thúc phải sau thời gian bắt đầu");
+        return;
+      }
+
+      // Kiểm tra có câu hỏi nào chưa
+      // if (questions.length === 0) {
+      //   toast.error("Vui lòng thêm ít nhất một câu hỏi");
+      //   return;
+      // }
 
       // Chuẩn bị dữ liệu gửi lên
       const examData = {
-        ...data,
+        title: data.title,
+        subject: data.subject,
+        duration: Number(data.duration),
+        start_time: data.start_time,
+        end_time: data.end_time,
         teacher_id: userInfo.id,
         questions: questions.map((q, index) => ({
-          ...q,
-          order: index + 1
+          content: q.content,
+          type: q.type,
+          score: Number(q.score),
+          order: index + 1,
+          options: q.type === 'fill-in-blank' ? [] : q.options.map(opt => ({
+            content: opt.content,
+            is_correct: opt.isCorrect
+          })),
+          answer: q.type === 'fill-in-blank' ? q.answer : null
         }))
       };
 
@@ -252,17 +287,20 @@ const CreateExam = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Môn học</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Chọn môn học" />
+                            <SelectValue placeholder="Chọn môn học">
+                              {field.value ? subjectMap[field.value] : 'Chọn môn học'}
+                            </SelectValue>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-white border-none shadow-lg">
-                          <SelectItem value="math">Toán</SelectItem>
-                          <SelectItem value="physics">Vật lý</SelectItem>
-                          <SelectItem value="chemistry">Hóa học</SelectItem>
-                          <SelectItem value="english">Tiếng Anh</SelectItem>
+                          {Object.entries(subjectMap).map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />

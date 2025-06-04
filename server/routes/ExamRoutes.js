@@ -5,12 +5,12 @@ const examRoutes = Router();
 
 // GET
 examRoutes.get('/list-exams', getAllExams); // Lấy danh sách bài thi
-examRoutes.get('/exam-detail/:id',getExamDetail);
+examRoutes.get('/detail-exam/:id',getExamDetail);
 // POST 
 examRoutes.post('/add-exam',addExam);
 // PUT 
-examRoutes.put('/exam-update/:id',updateExam);
+examRoutes.put('/update-exam/:id',updateExam);
 // DELETE
-examRoutes.delete('/exam-delete/:id',deleteExam);
+examRoutes.delete('/delete-exam/:id',deleteExam);
 
 export default examRoutes;

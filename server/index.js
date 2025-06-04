@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/AuthRoutes.js';
 import examRoutes from './routes/ExamRoutes.js';
 import userRoutes from './routes/UserRoutes.js';
+import questionRoutes from './routes/QuestionRoutes.js';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/questions', questionRoutes);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
