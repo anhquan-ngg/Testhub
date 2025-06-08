@@ -40,7 +40,7 @@ const examSchema = z.object({
   end_time: z.string().min(1, 'Vui lòng chọn thời gian kết thúc'),
 });
 
-const ExamForm = ({ defaultValues, onSubmit, onCancel }) => {
+const ExamForm = ({ defaultValues, onSubmit, onCancel, isSubmitting }) => {
   const form = useForm({
     resolver: zodResolver(examSchema),
     defaultValues: defaultValues || {
@@ -143,14 +143,15 @@ const ExamForm = ({ defaultValues, onSubmit, onCancel }) => {
         </div>
 
         <div className="flex justify-end space-x-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
             Hủy
           </Button>
           <Button 
             className="bg-black text-white"
             type="submit"
+            disabled={isSubmitting}
           >
-            Lưu thay đổi
+            {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
           </Button>
         </div>
       </form>

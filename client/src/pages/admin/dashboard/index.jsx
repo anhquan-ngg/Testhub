@@ -11,6 +11,14 @@ import {
   TableRow,
 } from '../../../components/ui/table';
 import { Users, BookOpen, GraduationCap, Award } from 'lucide-react';
+import { GET_RECENT_EXAMS_ROUTE, GET_RECENT_USERS_ROUTE } from '../../../utils/constants';
+
+const subjectMap = {
+  'math': 'Toán',
+  'physics': 'Vật lý',
+  'chemistry': 'Hóa học',
+  'english': 'Tiếng Anh',
+}
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -28,30 +36,23 @@ const Dashboard = () => {
   }, []);
 
   const fetchDashboardData = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      // Trong thực tế, thay thế bằng API call
-      // const response = await apiClient.get('/api/admin/dashboard');
+      const [getRecentExams, getRecentUsers] = await Promise.all([
+        apiClient.get(GET_RECENT_EXAMS_ROUTE, {withCredentials: true}),
+        apiClient.get(GET_RECENT_USERS_ROUTE, {withCredentials: true})
+      ]);
       
-      // Dữ liệu mẫu
       setStats({
-        totalStudents: 150,
-        totalExams: 45,
-        activeExams: 12,
-        completedExams: 33
+        totalStudents: getRecentUsers.data.filter(user => user.role === 'student').length,
+        totalExams: getRecentExams.data.length,
+        activeExams: getRecentExams.data.filter(exam => exam.status === 'active').length,
+        completedExams: getRecentExams.data.filter(exam => exam.status === 'finished').length
       });
 
-      setRecentExams([
-        { id: 1, title: 'Bài thi đánh giá tư duy lần 1', subject: 'Toán', participants: 30, avgScore: 7.5, status: 'active' },
-        { id: 2, title: 'Bài thi đánh giá tư duy lần 2', subject: 'Vật lý', participants: 25, avgScore: 8.0, status: 'completed' },
-        { id: 3, title: 'Bài thi đánh giá tư duy lần 3', subject: 'Tiếng Anh', participants: 40, avgScore: 6.5, status: 'active' },
-      ]);
+      setRecentExams(getRecentExams.data);
 
-      setNewStudents([
-        { id: 1, name: 'Nguyễn Văn A', email: 'student1@example.com', joinDate: '2024-03-15' },
-        { id: 2, name: 'Trần Thị B', email: 'student2@example.com', joinDate: '2024-03-14' },
-        { id: 3, name: 'Lê Văn C', email: 'student3@example.com', joinDate: '2024-03-13' },
-      ]);
+      setNewStudents(getRecentUsers.data.filter(user => user.role === 'student'));
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -143,18 +144,24 @@ const Dashboard = () => {
               {recentExams.map((exam) => (
                 <TableRow key={exam.id}>
                   <TableCell className="font-medium">{exam.title}</TableCell>
-                  <TableCell>{exam.subject}</TableCell>
+                  <TableCell>{subjectMap[exam.subject]}</TableCell>
                   <TableCell>{exam.participants}</TableCell>
                   <TableCell>{exam.avgScore}</TableCell>
                   <TableCell>
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        exam.status === 'active'
+                        exam.status === 'pending'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : exam.status === 'active'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {exam.status === 'active' ? 'Đang diễn ra' : 'Đã kết thúc'}
+                      {exam.status === 'pending' 
+                        ? 'Sắp diễn ra'
+                        : exam.status === 'active' 
+                        ? 'Đang diễn ra' 
+                        : 'Đã kết thúc'}
                     </span>
                   </TableCell>
                 </TableRow>
@@ -184,10 +191,10 @@ const Dashboard = () => {
             <TableBody>
               {newStudents.map((student) => (
                 <TableRow key={student.id}>
-                  <TableCell className="font-medium">{student.name}</TableCell>
+                  <TableCell className="font-medium">{student.full_name}</TableCell>
                   <TableCell>{student.email}</TableCell>
                   <TableCell>
-                    {new Date(student.joinDate).toLocaleDateString('vi-VN')}
+                    {new Date(student.createdAt).toLocaleDateString('vi-VN')}
                   </TableCell>
                 </TableRow>
               ))}

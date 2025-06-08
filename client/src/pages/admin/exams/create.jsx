@@ -21,6 +21,7 @@ const CreateExam = () => {
   const { userInfo } = useAppStore();
   const [questions, setQuestions] = useState([]);
   const [showQuestionBank, setShowQuestionBank] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     subject: '',
@@ -31,7 +32,11 @@ const CreateExam = () => {
 
   // Xử lý submit form bài thi
   const handleSubmit = async (data) => {
+    if (isSubmitting) return;
+    
     try {
+      setIsSubmitting(true);
+      
       // Kiểm tra thời gian
       const startTime = new Date(data.start_time);
       const endTime = new Date(data.end_time);
@@ -80,6 +85,8 @@ const CreateExam = () => {
     } catch (error) {
       console.error('Error creating exam:', error);
       toast.error(error.response?.data?.message || "Có lỗi xảy ra khi tạo bài thi");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -113,9 +120,9 @@ const CreateExam = () => {
           </CardHeader>
           <CardContent>
             <ExamForm
-              defaultValues={formData}
               onSubmit={handleSubmit}
               onCancel={() => navigate('/admin/exams')}
+              isSubmitting={isSubmitting}
             />
           </CardContent>
         </Card>
