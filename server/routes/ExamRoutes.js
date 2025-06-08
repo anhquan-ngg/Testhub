@@ -9,7 +9,7 @@ examRoutes.get('/detail-exam/:id',getExamDetail);
 // POST 
 examRoutes.post('/add-exam',addExam);
 // PUT 
-examRoutes.put('/update-exam/:id',updateExam);
+examRoutes.patch('/update-exam/:id',updateExam);
 // DELETE
 examRoutes.delete('/delete-exam/:id',deleteExam);
 

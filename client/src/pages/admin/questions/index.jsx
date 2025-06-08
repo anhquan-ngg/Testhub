@@ -104,6 +104,7 @@ const QuestionManagement = () => {
           {withCredentials: true}
         );
         if (response.status === 200) {
+          toast.success('Xóa câu hỏi thành công');
           setQuestions(questions.filter(question => question.id !== questionId));
         }
       } catch (error) {
@@ -283,7 +284,7 @@ const QuestionManagement = () => {
                   <div className="mt-2 space-y-2">
                     {selectedQuestion.type === 'fill-in-blank' ? (
                       <div className="p-2 rounded bg-green-100">
-                        {selectedQuestion.correct_anwser}
+                        {selectedQuestion.correct_answer}
                       </div>
                     ) : (
                       selectedQuestion.options?.map((option, index) => (

@@ -28,6 +28,11 @@ const menuItems = [
     href: '/admin/dashboard'
   },
   {
+    title: 'Quản lý người dùng',
+    icon: Users,
+    href: '/admin/users'
+  },
+  {
     title: 'Quản lý bài thi',
     icon: GraduationCap,
     href: '/admin/exams'
@@ -37,16 +42,11 @@ const menuItems = [
     icon: FileQuestion,
     href: '/admin/questions'
   },
-  {
-    title: 'Quản lý người dùng',
-    icon: Users,
-    href: '/admin/users'
-  },
-  {
-    title: 'Cài đặt',
-    icon: Settings,
-    href: '/admin/settings'
-  }
+  // {
+  //   title: 'Cài đặt',
+  //   icon: Settings,
+  //   href: '/admin/settings'
+  // }
 ];
 
 const AdminLayout = () => {

@@ -7,6 +7,7 @@ import { Textarea } from '../../../components/ui/textarea';
 import { Plus, Trash2 } from 'lucide-react';
 import { ADD_QUESTION_ROUTE } from '@/utils/constants';
 import { useAppStore } from '@/store';
+import { toast } from 'sonner';
 
 const subjectMap = {
   'math': 'Toán',
@@ -89,35 +90,35 @@ const CreateQuestion = () => {
 
     // Validation
     if (!formData.text.trim()) {
-      alert('Vui lòng nhập nội dung câu hỏi');
+      toast.error('Vui lòng nhập nội dung câu hỏi');
       return;
     }
 
     if (formData.type === 'single-choice' || formData.type === 'multiple-choice') {
       if (!formData.options.some(option => option.is_correct)) {
-        alert('Vui lòng chọn ít nhất một đáp án đúng');
+        toast.error('Vui lòng chọn ít nhất một đáp án đúng');
         return;
       }
 
       if (formData.options.some(option => !option.text.trim())) {
-        alert('Vui lòng nhập nội dung cho tất cả các đáp án');
+        toast.error('Vui lòng nhập nội dung cho tất cả các đáp án');
         return;
       }
 
       if (formData.type === 'single-choice' && formData.options.filter(opt => opt.is_correct).length > 1) {
-        alert('Câu hỏi một đáp án chỉ được chọn một đáp án đúng');
+        toast.error('Câu hỏi một đáp án chỉ được chọn một đáp án đúng');
         return;
       }
     } else if (formData.type === 'fill-in-blank') {
       if (!formData.correct_anwser.trim()) {
-        alert('Vui lòng nhập đáp án mẫu cho câu hỏi tự luận');
+        toast.error('Vui lòng nhập đáp án mẫu cho câu hỏi tự luận');
         return;
       }
     }
 
     try {
       setLoading(true);
-      await apiClient.post(
+      const response = await apiClient.post(
         ADD_QUESTION_ROUTE, 
         {...formData, created_by: userInfo.id}, 
         {withCredentials: true}

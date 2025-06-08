@@ -21,6 +21,7 @@ import {
 } from '../../../components/ui/dialog';
 import { Plus, Search, Edit, Trash2, Eye } from 'lucide-react';
 import { GET_LIST_EXAMS_ROUTE, DELETE_EXAM_ROUTE } from '../../../utils/constants';
+import { toast } from 'sonner';
 
 const subjectMap = {
   'math': 'Toán',
@@ -85,6 +86,7 @@ const ExamManagement = () => {
           {withCredentials: true}
         );
         if (response.status === 200) {
+          toast.success('Xóa bài thi thành công');
           setExams(exams.filter(exam => exam.id !== examId));
         }
       } catch (error) {
@@ -289,7 +291,6 @@ const ExamManagement = () => {
                 <div className="mt-2 space-y-2">
                   <p><span className="text-muted-foreground">Bắt đầu:</span> {new Date(selectedExam.start_time).toLocaleString('vi-VN')}</p>
                   <p><span className="text-muted-foreground">Kết thúc:</span> {new Date(selectedExam.end_time).toLocaleString('vi-VN')}</p>
-                  <p><span className="text-muted-foreground">Ngày tạo:</span> {new Date(selectedExam.createdAt).toLocaleDateString('vi-VN')}</p>
                   <p><span className="text-muted-foreground">Số thí sinh:</span> {selectedExam.participants}</p>
                 </div>
               </div>

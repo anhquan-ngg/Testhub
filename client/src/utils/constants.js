@@ -18,7 +18,7 @@ export const EXAMS_ROUTE = "api/exams";
 export const GET_LIST_EXAMS_ROUTE = `${EXAMS_ROUTE}/list-exams`; // Teacher / Student
 export const GET_DETAIL_EXAM_ROUTE = `${EXAMS_ROUTE}/detail-exam`; // Teacher / Student
 export const ADD_EXAM_ROUTE = `${EXAMS_ROUTE}/add-exam`; // Teacher
-export const PATCH_EXAM_ROUTE = `${EXAMS_ROUTE}/patch-exam/:id`; // Teacher
+export const PATCH_EXAM_ROUTE = `${EXAMS_ROUTE}/update-exam`; // Teacher
 export const DELETE_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-exam`; // Teacher
 
 export const QUESTION_ROUTE = "api/questions"; 

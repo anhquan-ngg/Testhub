@@ -20,6 +20,7 @@ import {
 } from '../../../components/ui/dialog';
 import { Search, Edit, Trash2, UserPlus } from 'lucide-react';
 import { GET_LIST_USERS_ROUTE, ADD_USER_ROUTE, PATCH_USER_ROUTE, DELETE_USER_ROUTE } from '@/utils/constants';
+import { toast } from 'sonner';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]); // Dữ liệu gốc
@@ -127,6 +128,7 @@ const UserManagement = () => {
           `${DELETE_USER_ROUTE}/${userId}`,
           {withCredentials: true}
         )
+        toast.success('Xóa người dùng thành công');
         setUsers(users.filter(user => user.id !== userId));
       } catch (error) {
         console.error('Error deleting user:', error);
@@ -141,14 +143,17 @@ const UserManagement = () => {
         // Cập nhật người dùng
         const response = await apiClient.patch(`${PATCH_USER_ROUTE}/${selectedUser.id}`, formData, {withCredentials: true})   ;
         if (response.status === 200) {
+          toast.success('Cập nhật người dùng thành công');
           setUsers(users.map(user => 
             user.id === selectedUser.id ? { ...user, ...formData } : user
           ));
+          setSelectedUser(null);
         }
       } else {
         // Thêm người dùng mới
         const response = await apiClient.post(ADD_USER_ROUTE, formData, {withCredentials: true});
         if (response.status === 201) {
+          toast.success('Thêm người dùng thành công');
           setUsers([...users, { id: Date.now(), ...formData, createdAt: new Date().toISOString() }]);
         }
       }
