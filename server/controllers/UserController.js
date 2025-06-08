@@ -10,6 +10,18 @@ export const getAllUsers = async (req, res, next) => {
     }
 }
 
+export const getRecentUsers = async (req, res, next) => {
+    try {
+        const users = await User.findAll({
+            order: [['createdAt', 'DESC']],
+            limit: 3
+        });
+        return res.status(200).json(users);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 export const addUser = async (req, res, next) => {
     try {
         const {full_name, email, password, role} = req.body;

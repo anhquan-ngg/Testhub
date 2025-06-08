@@ -11,6 +11,38 @@ export const getAllExams = async (req, res, next) => {
   }
 };
 
+export const getRecentExams = async (req, res, next) => {
+  try {
+    const exams = await Exam.findAll({
+      order: [['createdAt', 'DESC']],
+      limit: 3
+    });
+
+    // Cập nhật status dựa trên thời gian
+    const currentTime = new Date();
+    const updatedExams = exams.map(exam => {
+      const examData = exam.get({ plain: true });
+      const startTime = new Date(examData.start_time);
+      const endTime = new Date(examData.end_time);
+
+      if (currentTime < startTime) {
+        examData.status = 'pending';
+      } else if (currentTime >= startTime && currentTime <= endTime) {
+        examData.status = 'active';
+      } else {
+        examData.status = 'finished';
+      }
+
+      return examData;
+    });
+
+    res.status(200).json(updatedExams);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Server bị lỗi'});
+  }
+}
+
 export const getExamDetail = async (req, res, next) => {
     try {
       const { id } = req.params;

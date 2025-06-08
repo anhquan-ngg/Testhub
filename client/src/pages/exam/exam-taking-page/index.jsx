@@ -18,80 +18,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.jsx"
 import { apiClient } from '@/lib/api-client';
-
-const mockExamData = {
-  "id": "4",
-  "title": "Đề thi đánh giá tư duy",
-  "subject": "Môn: Toán",
-  "duration": 5400,
-  "questions": [
-    {
-      "id": "q1",
-      "number": 1,
-      "text": "Đạo hàm của F(x) = 2x³+1 tại x = 2",
-      "type": "single-choice",
-      "points": 0.2,
-      "options": [
-        { "id": "q1o1", "question_id": "q1", "text": "3", "isCorrect": false },
-        { "id": "q1o2", "question_id": "q1", "text": "9", "isCorrect": false },
-        { "id": "q1o3", "question_id": "q1", "text": "24", "isCorrect": true },
-        { "id": "q1o4", "question_id": "q1", "text": "8", "isCorrect": false }
-      ],
-      "imgUrl": null
-    },
-    {
-      "id": "q2",
-      "number": 2,
-      "text": "Cho hàm số y = ax³ + bx² + cx + d (a ≠ 0) có đồ thị như hình vẽ bên. Mệnh đề nào sau đây đúng?",
-      "type": "single-choice",
-      "points": 0.2,
-      "options": [
-        { "id": "q2o1", "question_id": "q2", "text": "a > 0, d > 0", "isCorrect": false },
-        { "id": "q2o2", "question_id": "q2", "text": "a < 0, d > 0", "isCorrect": false },
-        { "id": "q2o3", "question_id": "q2", "text": "a > 0, d < 0", "isCorrect": true },
-        { "id": "q2o4", "question_id": "q2", "text": "a < 0, d < 0", "isCorrect": false }
-      ],
-      "imgUrl": "https://i.imgur.com/exampleGraph.png"
-    },
-    {
-      "id": "q3",
-      "number": 3,
-      "text": "Tìm nguyên hàm của hàm số f(x) = 2x + 1.",
-      "type": "fill-in-blank",
-      "points": 0.2,
-      "correctAnswer": "x^2 + x + C",
-      "imgUrl": null
-    },
-    {
-      "id": "q4",
-      "number": 4,
-      "text": "Cho hình chóp S.ABCD có đáy ABCD là hình vuông cạnh a, SA ⊥ (ABCD) và SA = a√3. Tính thể tích khối chóp S.ABCD.",
-      "type": "fill-in-blank",
-      "points": 0.2,
-      "correctAnswer": "a³√3/6",
-      "imgUrl": null
-    },
-    {
-      "id": "q5",
-      "number": 5,
-      "text": "Những số nào sau đây là nghiệm của phương trình log₂(x² - x + 2) = 1 + log₂(x+1)? (Chọn tất cả các đáp án đúng)",
-      "type": "multiple-choice",
-      "points": 0.2,
-      "options": [
-        { "id": "q5o1", "question_id": "q5", "text": "x = 0", "isCorrect": true },
-        { "id": "q5o2", "question_id": "q5", "text": "x = 1", "isCorrect": false },
-        { "id": "q5o3", "question_id": "q5", "text": "x = -1/2", "isCorrect": false },
-        { "id": "q5o4", "question_id": "q5", "text": "x = 2", "isCorrect": false }
-      ],
-      "imgUrl": null
-    }
-  ]
-}
+import { GET_DETAIL_EXAM_ROUTE, ADD_SUBMISSION_ROUTE } from '@/utils/constants';
 
 const ExamTakingPage = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
-  const [examData, setExamData] = useState(mockExamData);
+  const [examData, setExamData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
@@ -100,15 +32,21 @@ const ExamTakingPage = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({}); 
   const [markedQuestions, setMarkedQuestions] = useState([]); 
-  const [timeLeft, setTimeLeft] = useState(mockExamData.duration);
+  const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
     const loadExamData = async () => {
       try {
         setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setExamData(mockExamData);
-        setError(null);
+        const response = await apiClient.get(`${GET_DETAIL_EXAM_ROUTE}/${examId}`);
+        if (response.data) {
+          setExamData(response.data);
+          setTimeLeft(response.data.duration);
+          setError(null);
+        } else {
+          setError("Không thể tải dữ liệu bài thi. Vui lòng thử lại.");
+          setExamData(null);
+        }
       } catch (err) {
         console.error("Failed to load exam data:", err);
         setError("Không thể tải dữ liệu bài thi. Vui lòng thử lại.");
@@ -180,19 +118,36 @@ const ExamTakingPage = () => {
 
   const handleSubmitExam = async () => {
     try {
+      const submissionData = {
+        examId: examId,
+        answers: userAnswers,
+        timeSpent: examData.duration - timeLeft
+      };
+
       const response = await apiClient.post(
+        ADD_SUBMISSION_ROUTE.replace(':id', examId),
+        submissionData
+      );
+
+      if (response.data) {
+        const message = `Nộp bài thành công!\n\n` +
+          `Tổng số câu hỏi: ${examData.questions.length}\n` +
+          `Số câu đã làm: ${answeredCount}\n` +
+          `Số câu chưa làm: ${examData.questions.length - answeredCount}`;
         
-      )
-    } catch (error){
-      console.log(error);
+        submitExamLogic(message);
+      } else {
+        alert('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại!');
+      }
+    } catch (error) {
+      console.error('Error submitting exam:', error);
+      alert('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại!');
     }
   };
 
   const submitExamLogic = (message) => {
-    console.log("Đang nộp bài...");
-    console.log("Câu trả lời của người dùng:", userAnswers);
     alert(message); 
-    navigate('/exams'); 
+    navigate('/student/exams'); 
   };
 
   const answeredCount = useMemo(() => {
@@ -240,65 +195,159 @@ const ExamTakingPage = () => {
         <h1 className="text-3xl font-bold text-red-600 mb-4">Hết giờ làm bài!</h1>
         <p className="text-lg mb-6">Bài thi của bạn đã được ghi nhận.</p>
         <button 
-          onClick={() => navigate('/exams')}
+          onClick={() => navigate('/student/exams')}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-          Quay về danh sách bài thi
+          Quay lại trang danh sách bài thi
         </button>
       </div>
     );
   }
 
-  const currentQuestion = examData.questions[currentQuestionIndex];
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      <ExamTakingHeader
-        examTitle={examData.title}
-        subject={examData.subject}
-        initialDurationInSeconds={examData.duration}
-        onTimeUp={handleTimeUp}
-      />
-      <div className="container mx-auto p-4">
-        <QuestionNavigationPanel
-          questions={examData.questions}
-          currentQuestionIndex={currentQuestionIndex}
-          userAnswers={userAnswers}
-          markedQuestions={markedQuestions}
-          onQuestionSelect={handleQuestionSelect}
-        />
-
-        <QuestionDisplay
-          question={currentQuestion}
-          userAnswer={userAnswers[currentQuestion.id]}
-          onAnswerChange={handleAnswerChange}
-          onMarkQuestion={handleMarkQuestion}
-          isMarked={markedQuestions.includes(currentQuestion.id)}
-        />
-
-        <ExamControls
-          currentQuestionIndex={currentQuestionIndex}
-          totalQuestions={examData.questions.length}
-          onPreviousQuestion={handlePreviousQuestion}
-          onNextQuestion={handleNextQuestion}
-        />
-
-        <QuickQuestionJumper
-          questions={examData.questions}
-          currentQuestionIndex={currentQuestionIndex}
-          userAnswers={userAnswers}
-          markedQuestions={markedQuestions}
-          onQuestionSelect={handleQuestionSelect}
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header cố định ở trên cùng */}
+      <div className="bg-white border-b shadow-sm sticky top-0 z-50">
+        <ExamTakingHeader 
+          examTitle={examData.title}
+          timeLeft={formattedTimeLeft}
+          onTimeUp={handleTimeUp}
         />
       </div>
+      
+      {/* Main content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left sidebar - Question navigation */}
+        <div className="w-64 bg-white border-r p-4 overflow-y-auto hidden lg:block">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Danh sách câu hỏi</h3>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                <span className="text-sm text-gray-600">Đã làm</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                <span className="text-sm text-gray-600">Đánh dấu</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-200 rounded-full"></div>
+                <span className="text-sm text-gray-600">Chưa làm</span>
+              </div>
+            </div>
+          </div>
+          <QuestionNavigationPanel
+            questions={examData.questions}
+            currentIndex={currentQuestionIndex}
+            userAnswers={userAnswers}
+            markedQuestions={markedQuestions}
+            onQuestionSelect={handleQuestionSelect}
+          />
+        </div>
 
-      <ExamTakingFooter
-          onSubmitExam={handleSubmitExam} // Sẽ dùng AlertDialogTrigger ở đây
-          timeLeftFormatted={formattedTimeLeft}
-          answeredCount={answeredCount}
-          totalQuestions={examData.questions.length}
-        />
+        {/* Main content area */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-4xl mx-auto p-6">
+            {/* Question number and navigation */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-gray-800">
+                Câu {currentQuestionIndex + 1}/{examData.questions.length}
+              </h2>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handlePreviousQuestion}
+                  disabled={currentQuestionIndex === 0}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Câu trước
+                </button>
+                <button
+                  onClick={handleNextQuestion}
+                  disabled={currentQuestionIndex === examData.questions.length - 1}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Câu tiếp
+                </button>
+              </div>
+            </div>
+
+            {/* Question content */}
+            <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+              <QuestionDisplay
+                question={examData.questions[currentQuestionIndex]}
+                userAnswer={userAnswers[examData.questions[currentQuestionIndex].id]}
+                onAnswerChange={handleAnswerChange}
+                isMarked={markedQuestions.includes(examData.questions[currentQuestionIndex].id)}
+                onMarkQuestion={handleMarkQuestion}
+              />
+            </div>
+
+            {/* Question controls */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => handleMarkQuestion(examData.questions[currentQuestionIndex].id)}
+                className="px-4 py-2 text-sm font-medium text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-md hover:bg-yellow-100"
+              >
+                {markedQuestions.includes(examData.questions[currentQuestionIndex].id)
+                  ? "Bỏ đánh dấu"
+                  : "Đánh dấu câu này"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right sidebar - Quick navigation */}
+        <div className="w-72 bg-white border-l p-4 overflow-y-auto hidden xl:block">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">Tổng quan</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Đã làm:</span>
+                <span className="text-sm font-medium text-gray-900">{answeredCount}/{examData.questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Đánh dấu:</span>
+                <span className="text-sm font-medium text-gray-900">{markedQuestions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Chưa làm:</span>
+                <span className="text-sm font-medium text-gray-900">{examData.questions.length - answeredCount}</span>
+              </div>
+            </div>
+          </div>
+          <QuickQuestionJumper
+            questions={examData.questions}
+            currentIndex={currentQuestionIndex}
+            userAnswers={userAnswers}
+            markedQuestions={markedQuestions}
+            onQuestionSelect={handleQuestionSelect}
+          />
+        </div>
+      </div>
+
+      {/* Footer cố định ở dưới cùng */}
+      <div className="bg-white border-t shadow-sm sticky bottom-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className="text-sm text-gray-600">
+                Đã làm: <span className="font-medium text-gray-900">{answeredCount}/{examData.questions.length}</span>
+              </div>
+              <div className="text-sm text-gray-600">
+                Thời gian còn lại: <span className="font-medium text-gray-900">{formattedTimeLeft}</span>
+              </div>
+            </div>
+            <button
+              onClick={handleSubmitExam}
+              className="px-6 py-2.5 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              Nộp bài
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
-  };
+};
+
 export default ExamTakingPage;

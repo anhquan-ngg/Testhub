@@ -42,7 +42,7 @@ const Exam = sequelize.define("Exam", {
     },
 }, {
     tableName: 'exams',
-    timestamps: false
+    timestamps: true
 })
 
 export default Exam;

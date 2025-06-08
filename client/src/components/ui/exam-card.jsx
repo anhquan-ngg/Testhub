@@ -2,9 +2,18 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+    });
+};
+
 const ExamCard = ({exam}) => {
     const navigate = useNavigate()
-    const isExpired = new Date(exam.registrationEnd) < new Date();
+    const isExpired = new Date(exam.end_time) < new Date();
+    const isNotStarted = new Date(exam.start_time) > new Date();
     const isRegistered = true;
     return (
         <Card className="max-w border border-[#f5f5f5] bg-white">
@@ -23,17 +32,19 @@ const ExamCard = ({exam}) => {
 
                     <div className="flex items-center justify-between">
                         <span className="text-base text-[#8c8c8c] text-bold text-muted-foreground">Thời gian đăng ký:</span>
-                        <span className="text-sm">{exam.registrationPeriod}</span>
+                        <span className="text-sm">{formatDate(exam.start_time)} - {formatDate(exam.end_time)}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
                         <span className="text-base text-[#8c8c8c] text-bold text-muted-foreground">Thời gian thi:</span>
-                        <span className="text-sm">{exam.examDate}</span>
+                        <span className="text-sm">{formatDate(exam.start_time)} - {formatDate(exam.end_time)}</span>
                     </div>
 
                     <div className="flex justify-end pt-2">
                         {
-                            isExpired 
+                            isNotStarted
+                            ? <Button className = "text-base text-bold text-muted-foreground bg-[#f5f5f5] text-[#8c8c8c] disabled" >Chưa bắt đầu</Button>
+                            : isExpired
                             ? <Button className = "text-base text-bold text-muted-foreground bg-[#f5f5f5] text-[#8c8c8c] disabled" >Hết hạn đăng ký</Button>
                                 : isRegistered
                                     ? 
