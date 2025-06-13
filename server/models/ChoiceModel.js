@@ -15,9 +15,13 @@ const Choice = sequelize.define('Choice', {
             key: 'id'
         }
     },
-    text: {
+    answer: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
+    },
+    selected_option: {
+        type: DataTypes.JSONB,
+        allowNull: true,
     },
     is_correct: {
         type: DataTypes.BOOLEAN,

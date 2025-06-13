@@ -11,7 +11,7 @@ const Result = sequelize.define('result', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'User',
+            model: 'users',
             key: 'id'
         }
     },
@@ -19,25 +19,65 @@ const Result = sequelize.define('result', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Exam',
+            model: 'exams',
             key: 'id'
         }
     },
-    score: {
+    total_score: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+        defaultValue: 0
+    },
+    total_questions: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        defaultValue: 0
+    },
+    correct_answers: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
+    wrong_answers: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
     },
     started_at: {
-        type: DataTypes.TIME,
+        type: DataTypes.DATE,
         allowNull: false
     },
-    finish_at: {
-        type: DataTypes.TIME,
+    finished_at: {
+        type: DataTypes.DATE,
         allowNull: false
     },
+    duration: {
+        type: DataTypes.INTEGER, // thời gian làm bài tính bằng giây
+        allowNull: true
+    },
+    status: {
+        type: DataTypes.ENUM('completed', 'in_progress', 'abandoned'),
+        allowNull: false,
+        defaultValue: 'in_progress'
+    },
+    passing_score: {
+        type: DataTypes.FLOAT,
+        allowNull: true
+    },
+    is_passed: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    }
 }, {
-    timestamps: false,
-    tableName: 'result'
+    timestamps: true,
+    tableName: 'results',
+    indexes: [
+        {
+            fields: ['user_id', 'exam_id'],
+            unique: false
+        }
+    ]
 });
 
 export default Result;

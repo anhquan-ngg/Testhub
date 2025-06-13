@@ -1,5 +1,6 @@
-import  { DataTypes } from 'sequelize'
+import { DataTypes } from 'sequelize'
 import sequelize from '../db'
+import Result from './ResultModel';
 
 const Submission = sequelize.define('Submission', {
     id: {
@@ -7,11 +8,19 @@ const Submission = sequelize.define('Submission', {
         primaryKey: true,
         autoIncrement: true
     }, 
+    result_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Result,
+            key: 'id'
+        }
+    },
     user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'User',
+            model: User,
             key: 'id'
         }
     },
@@ -19,7 +28,7 @@ const Submission = sequelize.define('Submission', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Exam',
+            model: Exam,
             key: 'id'
         }
     },
@@ -27,7 +36,7 @@ const Submission = sequelize.define('Submission', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-            model: 'Question',
+            model: Question,
             key: 'id'
         }
     },
@@ -35,7 +44,7 @@ const Submission = sequelize.define('Submission', {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: 'Choice',
+            model: Choice,
             key: 'id'
         }
     },
@@ -48,9 +57,33 @@ const Submission = sequelize.define('Submission', {
         allowNull: false,
         defaultValue: false
     },
+    score: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+        defaultValue: 0
+    },
+    time_spent: {
+        type: DataTypes.INTEGER, // thời gian trả lời câu hỏi (giây)
+        allowNull: true
+    },
+    submitted_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+    }
 }, {
     tableName: 'submissions',
-    timestamps: true
+    timestamps: true,
+    indexes: [
+        {
+            fields: ['result_id', 'question_id'],
+            unique: true
+        },
+        {
+            fields: ['user_id', 'exam_id', 'question_id'],
+            unique: false
+        }
+    ]
 });
 
 export default Submission;

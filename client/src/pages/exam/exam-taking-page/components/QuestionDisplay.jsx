@@ -17,19 +17,23 @@ const QuestionDisplay = ({
   if (!question) return null;
 
   const handleSingleChoiceChange = (value) => {
-    onAnswerChange(question.id, value);
+    // Nếu giá trị mới giống với giá trị hiện tại, gán null để bỏ chọn
+    const newValue = userAnswer?.toString() === value ? null : parseInt(value, 10);
+    onAnswerChange(question.id, newValue);
   };
 
   const handleMultipleChoiceChange = (optionId, checked) => {
-    let newAnswer = Array.isArray(userAnswer) ? [...userAnswer] : [];
+    // Ensure userAnswer is always an array
+    const currentAnswers = Array.isArray(userAnswer) ? userAnswer : [];
+    let newAnswer;
+    
     if (checked) {
-      if (!newAnswer.includes(optionId)) {
-        newAnswer.push(optionId);
-      }
+      newAnswer = [...currentAnswers, optionId].sort();
     } else {
-      newAnswer = newAnswer.filter(id => id !== optionId);
+      newAnswer = currentAnswers.filter(id => id !== optionId);
     }
-    onAnswerChange(question.id, newAnswer.sort()); // Sắp xếp để dễ so sánh
+    
+    onAnswerChange(question.id, newAnswer);
   };
 
   const handleFillInBlankChange = (event) => {
@@ -41,14 +45,21 @@ const QuestionDisplay = ({
       case 'single-choice':
         return (
           <RadioGroup
-            value={userAnswer || ""}
+            value={userAnswer?.toString() || ""} 
             onValueChange={handleSingleChoiceChange}
             className="space-y-2"
           >
-            {question.options.map((option) => (
-              <div key={option.id} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
-                <RadioGroupItem value={option.id} id={`${question.id}-${option.id}`} />
-                <Label htmlFor={`${question.id}-${option.id}`} className="flex-1 cursor-pointer">
+            {question.options.map((option, index) => (
+              <div 
+                key={index} 
+                className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50"
+                onClick={() => handleSingleChoiceChange(index.toString())}
+              >
+                <RadioGroupItem 
+                  value={index.toString()}
+                  id={`${question.id}-${index}`}
+                />
+                <Label htmlFor={`${question.id}-${index}`} className="flex-1 cursor-pointer">
                   {option.text}
                 </Label>
               </div>
@@ -58,14 +69,14 @@ const QuestionDisplay = ({
       case 'multiple-choice':
         return (
           <div className="space-y-2">
-            {question.options.map((option) => (
-              <div key={option.id} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
+            {question.options.map((option, index) => (
+              <div key={index} className="flex items-center space-x-2 p-2 border rounded-md hover:bg-gray-50">
                 <Checkbox
-                  id={`${question.id}-${option.id}`}
-                  checked={Array.isArray(userAnswer) && userAnswer.includes(option.id)}
-                  onCheckedChange={(checked) => handleMultipleChoiceChange(option.id, checked)}
+                  id={`${question.id}-${index}`}
+                  checked={Array.isArray(userAnswer) && userAnswer.includes(index)}
+                  onCheckedChange={(checked) => handleMultipleChoiceChange(index, checked)}
                 />
-                <Label htmlFor={`${question.id}-${option.id}`} className="flex-1 cursor-pointer">
+                <Label htmlFor={`${question.id}-${index}`} className="flex-1 cursor-pointer">
                   {option.text}
                 </Label>
               </div>
@@ -92,7 +103,7 @@ const QuestionDisplay = ({
       <div className="flex justify-between items-start mb-3">
         <div>
           <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-1">
-            Câu {question.number}: ({question.points} điểm)
+            Câu hỏi:
           </h2>
         </div>
         <Button
