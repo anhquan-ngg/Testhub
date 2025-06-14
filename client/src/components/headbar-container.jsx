@@ -51,7 +51,7 @@ const HeadbarContainer = () => {
             <DropdownMenuItem 
               className="hover:bg-gray-200 hover:text-gray-600"
               onClick={() => {
-                navigate('/profile');
+                navigate('/student/profile');
               }}
             >
               <img src={User} alt="User" className='w-4 h-4'/>

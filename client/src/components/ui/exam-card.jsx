@@ -1,6 +1,10 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiClient } from "@/lib/api-client";
+import { GET_STATUS_ROUTE } from "@/utils/constants";
+import { useAppStore } from "@/store";
 
 const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -12,9 +16,30 @@ const formatDate = (dateString) => {
 
 const ExamCard = ({exam}) => {
     const navigate = useNavigate()
+    const {userInfo} = useAppStore();
     const isExpired = new Date(exam.end_time) < new Date();
     const isNotStarted = new Date(exam.start_time) > new Date();
-    const isRegistered = true;
+    const [isRegistered, setIsRegistered] = useState(false);
+    const [isCompleted, setIsCompleted] = useState(false);
+
+    useEffect(() => {
+        const checkIsRegistered = async () => {
+            try {
+                const response = await apiClient.get(
+                    `${GET_STATUS_ROUTE}/${userInfo.id}/${exam.id}`,
+                    {
+                        withCredentials: true
+                    });
+                setIsRegistered(response.data.status === 'registered');
+                setIsCompleted(response.data.status === 'completed');
+            } catch (error) {
+                console.error("Error checking registration status:", error);
+            }
+        }
+
+        checkIsRegistered();
+    },[]);
+
     return (
         <Card className="max-w border border-[#f5f5f5] bg-white">
             <CardHeader className="border-b-2 border-[#f5f5f5] pb-3">
@@ -41,8 +66,9 @@ const ExamCard = ({exam}) => {
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        {
-                            isNotStarted
+                        { isCompleted
+                            ? <Button className = "text-base text-bold text-muted-foreground bg-[#f5f5f5] text-[#8c8c8c] disabled" >Đã hoàn thành</Button>
+                            : isNotStarted
                             ? <Button className = "text-base text-bold text-muted-foreground bg-[#f5f5f5] text-[#8c8c8c] disabled" >Chưa bắt đầu</Button>
                             : isExpired
                             ? <Button className = "text-base text-bold text-muted-foreground bg-[#f5f5f5] text-[#8c8c8c] disabled" >Hết hạn đăng ký</Button>
@@ -54,7 +80,13 @@ const ExamCard = ({exam}) => {
                                     >
                                         Vào thi
                                     </Button>
-                                    : <Button className = "text-base text-bold text-muted-foreground bg-[#b8cae8] text-[#0056d2] hover: cursor-pointer" >Đăng ký</Button>
+                                    : 
+                                    <Button 
+                                        className = "text-base text-bold text-muted-foreground bg-[#b8cae8] text-[#0056d2] hover: cursor-pointer" 
+                                        onClick = {() => navigate(`/student/exams/${exam.id}/register`)}
+                                    >
+                                        Đăng ký
+                                    </Button>
                         }
                     </div>
                 </div>

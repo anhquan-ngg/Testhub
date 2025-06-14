@@ -7,43 +7,37 @@ export const LOGOUT_ROUTE = `${AUTH_ROUTE}/logout`;
 export const GET_USER_INFO_ROUTE = `${AUTH_ROUTE}/user-info`;
 export const UPDATE_USER_INFO_ROUTE = `${AUTH_ROUTE}/update-user-info`;
 
-export const USERS_ROUTE = "api/users"; 
+export const USERS_ROUTE = "api/users";
 export const GET_LIST_USERS_ROUTE = `${USERS_ROUTE}/list-users`;
-export const GET_RECENT_USERS_ROUTE = `${USERS_ROUTE}/recent-users`; // Admin
-export const ADD_USER_ROUTE = `${USERS_ROUTE}/add-user`; // Admin
-export const GET_DETAIL_USER_ROUTE = `${USERS_ROUTE}/detail-user`; // Admin / Teacher // Not done
-export const PATCH_USER_ROUTE = `${USERS_ROUTE}/patch-user`;   // Admin / Self
-export const DELETE_USER_ROUTE = `${USERS_ROUTE}/delete-user`; // Admin
+export const GET_RECENT_USERS_ROUTE = `${USERS_ROUTE}/recent-users`;
+export const ADD_USER_ROUTE = `${USERS_ROUTE}/add-user`;
+export const GET_DETAIL_USER_ROUTE = `${USERS_ROUTE}/detail-user`;
+export const PATCH_USER_ROUTE = `${USERS_ROUTE}/patch-user`;
+export const DELETE_USER_ROUTE = `${USERS_ROUTE}/delete-user`;
 
 export const EXAMS_ROUTE = "api/exams";
-export const GET_LIST_EXAMS_ROUTE = `${EXAMS_ROUTE}/list-exams`; 
-export const GET_RECENT_EXAMS_ROUTE = `${EXAMS_ROUTE}/recent-exams`; // Teacher / Student
-export const GET_DETAIL_EXAM_ROUTE = `${EXAMS_ROUTE}/detail-exam`; // Teacher / Student
-export const ADD_EXAM_ROUTE = `${EXAMS_ROUTE}/add-exam`; // Teacher
-export const PATCH_EXAM_ROUTE = `${EXAMS_ROUTE}/update-exam`; // Teacher
-export const DELETE_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-exam`; // Teacher
+export const GET_LIST_EXAMS_ROUTE = `${EXAMS_ROUTE}/list-exams`;
+export const GET_RECENT_EXAMS_ROUTE = `${EXAMS_ROUTE}/recent-exams`;
+export const GET_DETAIL_EXAM_ROUTE = `${EXAMS_ROUTE}/detail-exam`;
+export const ADD_EXAM_ROUTE = `${EXAMS_ROUTE}/add-exam`;
+export const PATCH_EXAM_ROUTE = `${EXAMS_ROUTE}/update-exam`;
+export const DELETE_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-exam`;
 
-export const QUESTION_ROUTE = "api/questions"; 
-export const GET_LIST_QUESTIONS_ROUTE = `${QUESTION_ROUTE}/list-questions`; // Teacher / Student
-export const ADD_QUESTION_ROUTE = `${QUESTION_ROUTE}/add-question`; // Teacher
-export const GET_DETAIL_QUESTION_ROUTE = `${QUESTION_ROUTE}/detail-question`; // Teacher
-export const PATCH_QUESTION_ROUTE = `${QUESTION_ROUTE}/patch-question`; // Teacher 
-export const DELETE_QUESTION_ROUTE = `${QUESTION_ROUTE}/delete-question`; // Teacher
+export const QUESTIONS_ROUTE = "api/questions";
+export const GET_LIST_QUESTIONS_ROUTE = `${QUESTIONS_ROUTE}/list-questions`;
+export const GET_DETAIL_QUESTION_ROUTE = `${QUESTIONS_ROUTE}/detail-question`;
+export const ADD_QUESTION_ROUTE = `${QUESTIONS_ROUTE}/add-question`;
+export const PATCH_QUESTION_ROUTE = `${QUESTIONS_ROUTE}/patch-question`;
+export const DELETE_QUESTION_ROUTE = `${QUESTIONS_ROUTE}/delete-question`;
 
-export const ADD_QUESTION_TO_EXAM_ROUTE = `${EXAMS_ROUTE}/add-question-to-exam`; // Teacher
-export const GET_LIST_QUESTION_OF_EXAM_ROUTE = `${EXAMS_ROUTE}list-question-of-exam`; // Teacher/ Student
-export const DELETE_QUESTION_FROM_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-question-from-exam`; // Teacher
+export const SUBMISSIONS_ROUTE = "api/submissions";
+export const ADD_SUBMISSION_ROUTE = `${SUBMISSIONS_ROUTE}/submit-exam`;
+export const GET_STUDENT_SUBMISSIONS_ROUTE = `${SUBMISSIONS_ROUTE}/student`;
+export const GET_SUBMISSION_RESULT_ROUTE = `${SUBMISSIONS_ROUTE}`;
 
-export const SUBMISSION_ROUTE = "api/submissions";
-export const ADD_SUBMISSION_ROUTE = `${SUBMISSION_ROUTE}/add-submission`; // Student
-export const GET_LIST_SUBMISSION_ROUTE = `${SUBMISSION_ROUTE}/list-submissions`; // Teacher
-export const GET_DETAIL_SUBMISSION_ROUTE = `${SUBMISSION_ROUTE}/detail-submission`; // Teacher/Student
-
-export const RESULT_ROUTE = "api/results"; 
-export const GET_RESULT_BY_USER_ROUTE = `${RESULT_ROUTE}/list-result-by-user/:id`; // Teacher / Student
-export const GET_LIST_RESULT_BY_EXAM_ROUTE = `${EXAMS_ROUTE}/list-result-by-exam/:id`; // Teacher / Student
-
-export const PROCTORING_ROUTE = "api/proctoring"; 
-export const LOG_PROCTORING_ROUTE = `${PROCTORING_ROUTE}/log-proctoring/`; // Student (Auto)
-export const GET_LIST_PROCTORING_BY_EXAM_ROUTE = `${EXAMS_ROUTE}/list-proctoring-by-exam/:id`; // Teacher
-
+export const USER_EXAMS_ROUTE = "api/user-exams";
+export const REGISTER_EXAM_ROUTE = `${USER_EXAMS_ROUTE}/register`;
+export const GET_STUDENT_REGISTRATIONS_ROUTE = `${USER_EXAMS_ROUTE}/student`;
+export const UNREGISTER_EXAM_ROUTE = `${USER_EXAMS_ROUTE}/unregister`;
+export const CHECK_REGISTRATION_STATUS_ROUTE = `${USER_EXAMS_ROUTE}/check`;
+export const GET_STATUS_ROUTE = `${USER_EXAMS_ROUTE}/get-status`;

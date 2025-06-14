@@ -4,6 +4,8 @@ import FileText from '@/assets/icon/file-text.svg';
 import FileTextBlue from '@/assets/icon/file-text-blue.svg';
 import User from '@/assets/icon/user.svg';
 import UserBlue from '@/assets/icon/user-blue.svg';
+import Frame from '@/assets/icon/frame.svg';
+import FrameBlue from '@/assets/icon/frame-blue.svg';
 import { Link, useLocation } from 'react-router-dom';
 
 const SidebarItem = ({ to, icon, iconActive, label }) => {
@@ -29,22 +31,29 @@ const SidebarItem = ({ to, icon, iconActive, label }) => {
 
 const SidebarContainer = () => {
   return (
-    <div className="relative md:w-[25vw] lg:w-[20vw] xl:w-[15vw] bg-white border-r border-gray-200">
-      <div className="h-15 px-4 py-4 border-b border-gray-300">
-        <img src={Logo} alt="Logo" className="w-40" />
+    <div className="md:w-[25vw] lg:w-[20vw] xl:w-[15vw] bg-white border-r-gray-400">
+      <div className="p-[28px] items-center justify-center">
+        <img src={Logo} alt='Logo' className="w-72"/>
       </div>
-      <div className="flex flex-col text-md">
-        <SidebarItem
-          to="/student/exams"
-          icon={FileText}
-          iconActive={FileTextBlue}
-          label="Bài thi"
+      
+      <div className="text-md">
+        <SidebarItem 
+          to="/student/exams" 
+          icon={FileText} 
+          iconActive={FileTextBlue} 
+          label="Bài thi" 
         />
-        <SidebarItem
-          to="/student/profile"
-          icon={User}
-          iconActive={UserBlue}
-          label="Tài khoản"
+        <SidebarItem 
+          to="/student/results" 
+          icon={Frame} 
+          iconActive={FrameBlue} 
+          label="Kết quả" 
+        />
+        <SidebarItem 
+          to="/student/profile" 
+          icon={User} 
+          iconActive={UserBlue} 
+          label="Tài khoản" 
         />
       </div>
     </div>

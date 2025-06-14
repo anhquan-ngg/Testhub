@@ -1,5 +1,4 @@
-import Submission from "../models/SubmissionModel.js";
-import Question from "../models/QuestionModel.js";
+import { Submission, Exam, Question, User } from '../models/index.js';
 
 export const getListSubmissions = async (req, res) => {
 
@@ -14,14 +13,14 @@ export const addSubmission = async (req, res) => {
             return res.status(400).json({ message: "Thiếu thông tin cần thiết" });
         }
 
-        const submissions = Object.entries(answers).map(([questionId, answer]) => ({
+        const submissions = Object.entries(answers).map(([questionId, answer]) => (({
             student_id: student_id,
             exam_id: exam_id,
             question_id: parseInt(questionId),
             selected_choice: Array.isArray(answer) ? answer : typeof answer === 'number' ? answer : null,
             answer_text: typeof answer === 'string' ? answer : null,
             time_spent: time_spent
-        }));
+        })));
 
         console.log("Processed submissions:", submissions);
 
@@ -98,3 +97,13 @@ export const addSubmission = async (req, res) => {
 export const getDetailSubmission = async (req, res) => {
 
 }
+
+// Lấy danh sách bài thi đã làm của sinh viên
+export const getStudentSubmissions = async (req, res) => {
+
+};
+
+// Lấy chi tiết kết quả một bài thi
+export const getSubmissionResult = async (req, res) => {
+
+};

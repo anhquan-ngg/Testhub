@@ -13,6 +13,9 @@ import Signup from './pages/auth/signup';
 import StudentHome from './pages/student/home';
 import StudentProfile from './pages/student/profile';
 import ExamTakingPage from './pages/exam/exam-taking-page';
+import StudentResults from './pages/student/results';
+import ResultDetail from './pages/student/results/detail';
+import ExamRegistration from './pages/student/exam-registration';
 
 // Admin pages
 import AdminDashboard from './pages/admin/dashboard';
@@ -25,7 +28,6 @@ import CreateQuestion from './pages/admin/questions/create';
 import EditQuestion from './pages/admin/questions/edit';
 
 // Common pages
-// import Home from './pages/Home';
 import NotFound from './pages/error/NotFound';
 import Forbidden from './pages/error/Forbidden';
 
@@ -48,7 +50,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-const App = () => {
+function App() {
   const { userInfo, setUserInfo } = useAppStore();
   const [loading, setLoading] = useState(true);
 
@@ -85,65 +87,97 @@ const App = () => {
 
   return (
     <Router>
-      <Toaster position="top-right" />
-      <Routes>
-        {/* Home route
-        <Route path="/" element={<Home />} /> */}
+      <div className="App">
+        <Toaster position="top-right" />
+        <Routes>
+          {/* Auth routes */}
+          <Route 
+            path="/login" 
+            element={userInfo ? <Navigate to="/" /> : <Login />} 
+          />
+          <Route 
+            path="/signup" 
+            element={userInfo ? <Navigate to="/" /> : <Signup />} 
+          />
 
-        {/* Auth routes */}
-        <Route 
-          path="/login" 
-          element={userInfo ? <Navigate to="/" /> : <Login />} 
-        />
-        <Route 
-          path="/signup" 
-          element={userInfo ? <Navigate to="/" /> : <Signup />} 
-        />
+          {/* Admin routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="exams" element={<ExamManagement />} />
+            <Route path="exams/create" element={<CreateExam />} />
+            <Route path="exams/:id/edit" element={<EditExam />} />
+            <Route path="questions" element={<QuestionManagement />} />
+            <Route path="questions/create" element={<CreateQuestion />} />
+            <Route path="questions/:id/edit" element={<EditQuestion />} />
+            <Route index element={<Navigate to="/admin/dashboard" />} />
+          </Route>
 
-        {/* Admin routes */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="exams" element={<ExamManagement />} />
-          <Route path="exams/create" element={<CreateExam />} />
-          <Route path="exams/:id/edit" element={<EditExam />} />
-          <Route path="questions" element={<QuestionManagement />} />
-          <Route path="questions/create" element={<CreateQuestion />} />
-          <Route path="questions/:id/edit" element={<EditQuestion />} />
-          <Route index element={<Navigate to="/admin/dashboard" />} />
-        </Route>
+          {/* Student routes */}
+          <Route
+            path="/student"
+            element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <StudentLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="exams" element={<StudentHome />} />
+            <Route path="profile" element={<StudentProfile />} />
+            <Route path="results" element={<StudentResults />} />
+            <Route path="results/:submissionId" element={<ResultDetail />} />
+            <Route index element={<Navigate to="/student/exams" />} />
+          </Route>
 
-        {/* Student routes */}
-        <Route
-          path="/student"
-          element={
-            <ProtectedRoute allowedRoles={['student']}>
-              <StudentLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="exams" element={<StudentHome />} />
-          <Route path="profile" element={<StudentProfile />} />
-          <Route path="exams/:examId/take" element={<ExamTakingPage />} />
-          <Route index element={<Navigate to="/student/exams" />} />
-        </Route>
+          {/* Exam routes (outside layout for full-screen experience) */}
+          <Route 
+            path="/student/exams/:examId/take" 
+            element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <ExamTakingPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Registration route (outside layout for custom design) */}
+          <Route 
+            path="student/exams/:examId/register" 
+            element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <ExamRegistration />
+              </ProtectedRoute>
+            } 
+          />
 
-        {/* Error routes */}
-        {/* <Route path="/forbidden" element={<Forbidden />} /> */}
-        <Route path="*" element={
-          userInfo ?  
-          (userInfo.role === 'student' ? <Navigate to="/student/exams" /> : <Navigate to="/admin/dashboard" />)
-          : <Navigate to="/login" />} />
-      </Routes>
+          {/* Error routes */}
+          <Route path="/forbidden" element={<Forbidden />} />
+          <Route path="/404" element={<NotFound />} />
+          <Route path="*" element={<NotFound />} />
+
+          {/* Default redirect */}
+          <Route 
+            path="/" 
+            element={
+              userInfo ? (
+                userInfo.role === 'admin' ? 
+                  <Navigate to="/admin/dashboard" /> : 
+                  <Navigate to="/student/exams" />
+              ) : (
+                <Navigate to="/login" />
+              )
+            } 
+          />
+        </Routes>
+      </div>
     </Router>
   );
-};
+}
 
 export default App;
