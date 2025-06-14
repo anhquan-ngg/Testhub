@@ -1,6 +1,8 @@
 import { DataTypes } from 'sequelize'
-import sequelize from '../db'
-import Result from './ResultModel';
+import sequelize from '../db.js'
+import User from './UserModel.js'
+import Exam from './ExamModel.js'
+import Question from './QuestionModel.js'
 
 const Submission = sequelize.define('Submission', {
     id: {
@@ -8,15 +10,7 @@ const Submission = sequelize.define('Submission', {
         primaryKey: true,
         autoIncrement: true
     }, 
-    result_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: Result,
-            key: 'id'
-        }
-    },
-    user_id: {
+    student_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -40,13 +34,9 @@ const Submission = sequelize.define('Submission', {
             key: 'id'
         }
     },
-    selected_choice_id: {
-        type: DataTypes.INTEGER,
+    selected_choice: {
+        type: DataTypes.JSONB, // Using JSONB to store multiple choices for multiple-choice questions
         allowNull: true,
-        references: {
-            model: Choice,
-            key: 'id'
-        }
     },
     answer_text: {
         type: DataTypes.TEXT,
@@ -57,14 +47,10 @@ const Submission = sequelize.define('Submission', {
         allowNull: false,
         defaultValue: false
     },
-    score: {
-        type: DataTypes.FLOAT,
+    time_spent: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 0
-    },
-    time_spent: {
-        type: DataTypes.INTEGER, // thời gian trả lời câu hỏi (giây)
-        allowNull: true
     },
     submitted_at: {
         type: DataTypes.DATE,
@@ -73,7 +59,7 @@ const Submission = sequelize.define('Submission', {
     }
 }, {
     tableName: 'submissions',
-    timestamps: true,
+    timestamps: false,
     indexes: [
         {
             fields: ['result_id', 'question_id'],

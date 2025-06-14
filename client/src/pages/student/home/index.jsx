@@ -10,7 +10,7 @@ const StudentHome = () => {
   useEffect(() => {
     const fetchExams = async () => {
       try {
-        const response = await apiClient.get(GET_LIST_EXAMS_ROUTE);
+        const response = await apiClient.get(GET_LIST_EXAMS_ROUTE, {withCredentials: true});
         setExams(response.data);
       } catch (error) {
         console.error("Error fetching exams:", error);

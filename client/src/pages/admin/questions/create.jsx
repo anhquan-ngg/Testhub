@@ -123,6 +123,7 @@ const CreateQuestion = () => {
         {...formData, created_by: userInfo.id}, 
         {withCredentials: true}
       );
+      console.log('Create Question Response:', response.data);
       if (response.status === 201) {
         toast.success("Tạo câu hỏi thành công");
         navigate('/admin/questions');

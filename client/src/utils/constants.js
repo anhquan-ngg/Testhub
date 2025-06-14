@@ -30,13 +30,14 @@ export const GET_DETAIL_QUESTION_ROUTE = `${QUESTION_ROUTE}/detail-question`; //
 export const PATCH_QUESTION_ROUTE = `${QUESTION_ROUTE}/patch-question`; // Teacher 
 export const DELETE_QUESTION_ROUTE = `${QUESTION_ROUTE}/delete-question`; // Teacher
 
-export const ADD_QUESTION_TO_EXAM_ROUTE = `${EXAMS_ROUTE}/add-question-to-exam/:id`; // Teacher
-export const GET_LIST_QUESTION_OF_EXAM_ROUTE = `${EXAMS_ROUTE}list-question-of-exam/:id`; // Teacher/ Student
-export const DELETE_QUESTION_FROM_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-question-from-exam/:id`; // Teacher
+export const ADD_QUESTION_TO_EXAM_ROUTE = `${EXAMS_ROUTE}/add-question-to-exam`; // Teacher
+export const GET_LIST_QUESTION_OF_EXAM_ROUTE = `${EXAMS_ROUTE}list-question-of-exam`; // Teacher/ Student
+export const DELETE_QUESTION_FROM_EXAM_ROUTE = `${EXAMS_ROUTE}/delete-question-from-exam`; // Teacher
 
-export const ADD_SUBMISSION_ROUTE = `${EXAMS_ROUTE}/submission/:id`; // Student
-export const GET_LIST_SUBMISSION_ROUTE = `${EXAMS_ROUTE}/list-submission/:id`; // Teacher
-export const GET_DETAIL_SUBMISSION_ROUTE = `${EXAMS_ROUTE}/detail-submission/:id`; // Teacher/Student
+export const SUBMISSION_ROUTE = "api/submissions";
+export const ADD_SUBMISSION_ROUTE = `${SUBMISSION_ROUTE}/add-submission`; // Student
+export const GET_LIST_SUBMISSION_ROUTE = `${SUBMISSION_ROUTE}/list-submissions`; // Teacher
+export const GET_DETAIL_SUBMISSION_ROUTE = `${SUBMISSION_ROUTE}/detail-submission`; // Teacher/Student
 
 export const RESULT_ROUTE = "api/results"; 
 export const GET_RESULT_BY_USER_ROUTE = `${RESULT_ROUTE}/list-result-by-user/:id`; // Teacher / Student

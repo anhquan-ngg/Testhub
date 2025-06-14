@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ExamTakingHeader from './components/ExamTakingHeader';
 import QuestionDisplay from './components/QuestionDisplay';
@@ -16,12 +16,15 @@ import {
 } from "@/components/ui/alert-dialog.jsx"
 import { apiClient } from '@/lib/api-client';
 import { GET_DETAIL_EXAM_ROUTE, ADD_SUBMISSION_ROUTE } from '@/utils/constants';
+import { useAppStore } from './../../../store/index';
+import { toast } from 'sonner';
 
 const ExamTakingPage = () => {
+  const {userInfo} = useAppStore();
   const { examId } = useParams();
   const navigate = useNavigate();
   const [examData, setExamData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
 
@@ -38,68 +41,73 @@ const ExamTakingPage = () => {
     note: '', // Ghi chú cho các câu hỏi được chọn
   });
 
+  // Thêm loading state
+
   useEffect(() => {
-    const loadExamData = async () => {
+    const fetchExamData = async () => {
       try {
-        setLoading(true);
-        const response = await apiClient.get(`${GET_DETAIL_EXAM_ROUTE}/${examId}`);
-        if (response.data) {
-          setExamData(response.data);
-          setTimeLeft(response.data.duration);
-          setError(null);
-        } else {
-          setError("Không thể tải dữ liệu bài thi. Vui lòng thử lại.");
-          setExamData(null);
+        setIsLoading(true);
+        setError(null);
+        
+        // Log để debug
+        console.log('Fetching exam with ID:', examId);
+        
+        const response = await apiClient.get(
+          `${GET_DETAIL_EXAM_ROUTE}/${examId}`,
+          {withCredentials: true} // Thêm tùy chọn này nếu cần thiết để gửi cookie
+        ); // Sửa đường dẫn API
+        
+        // Log response
+        console.log('API Response:', response.data);
+
+        if (!response.data) {
+          throw new Error('Không có dữ liệu trả về');
         }
-      } catch (err) {
-        console.error("Failed to load exam data:", err);
-        setError("Không thể tải dữ liệu bài thi. Vui lòng thử lại.");
-        setExamData(null);
+
+        setExamData(response.data);
+
+      } catch (error) {
+        console.error('Error details:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
+        setError(error.response?.data?.message || 'Không thể tải thông tin bài thi');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    loadExamData();
+
+    if (examId) {
+      fetchExamData();
+    }
   }, [examId]);
 
-  useEffect(() => {
-    if (timeLeft > 0 && !isTimeUp) {
-      const timer = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          if (prevTime <= 1) {
-            clearInterval(timer);
-            handleTimeUp(); // Gọi hàm khi hết giờ
-            return 0; // Đặt thời gian còn lại về 0
-          }
-          return prevTime - 1; // Giảm thời gian còn lại
-        })
-      console.log("Thời gian còn lại:",timeLeft);
-      })
-    }
-  }, 1000);
-
-  const handleTimeUp = () => {
-    console.log("Hết giờ làm bài!");
+  // Đầu tiên, thêm useCallback để memoize hàm handleTimeUp
+  const handleTimeUp = useCallback(() => {
     setIsTimeUp(true);
-    
-    // Tính số câu đã làm và chưa làm
-    const totalQuestions = examData.questions.length;
-    const answeredQuestions = Object.keys(userAnswers).filter(qid => {
-      const answer = userAnswers[qid];
-      return Array.isArray(answer) ? answer.length > 0 : answer !== null && answer !== '';
-    }).length;
-    const unansweredQuestions = totalQuestions - answeredQuestions;
+    // Các xử lý khác khi hết giờ
+  }, []); // Mảng rỗng vì không phụ thuộc giá trị nào
 
-    // Tạo thông báo chi tiết
-    const message = `Đã hết thời gian làm bài!\n\n` +
-      `Tổng số câu hỏi: ${totalQuestions}\n` +
-      `Số câu đã làm: ${answeredQuestions}\n` +
-      `Số câu chưa làm: ${unansweredQuestions}\n\n` +
-      `Bài thi của bạn đã được nộp tự động.`;
+  // // Sau đó sửa lại useEffect đếm ngược
+  // useEffect(() => {
+  //   // Chỉ bắt đầu đếm khi có thời gian và chưa hết giờ
+  //   if (timeLeft > 0 && !isTimeUp) {
+  //     const timer = setInterval(() => {
+  //       setTimeLeft((prevTime) => {
+  //         if (prevTime <= 1) {
+  //           clearInterval(timer);
+  //           handleTimeUp();
+  //           return 0;
+  //         }
+  //         return prevTime - 1;
+  //       });
+  //     }, 1000);
 
-    // Gọi hàm nộp bài với thông báo
-    submitExamLogic(message);
-  };
+  //     // Cleanup function để clear interval khi component unmount
+  //     return () => clearInterval(timer);
+  //   }
+  // }, [timeLeft, isTimeUp, handleTimeUp]); // Thêm đầy đủ các dependencies
 
   const handleQuestionSelect = (index) => {
     if (index >= 0 && index < examData.questions.length) {
@@ -180,40 +188,60 @@ const ExamTakingPage = () => {
 
   const handleSubmitExam = async () => {
     try {
-      const submissionData = {
-        examId: examId,
-        answers: userAnswers,
-        timeSpent: examData.duration - timeLeft,
-        selectedQuestions: selectedQuestions,
-        selectedAnswers: formData.selectedAnswers,
-        note: formData.note
+      if (!examData) {
+        toast.error('Không tìm thấy thông tin bài thi!');
+        return;
+      }
+
+      // Log dữ liệu trước khi format
+      console.log('Raw data:', {
+        examData,
+        userAnswers,
+        timeLeft
+      });
+
+      const payload = {
+        student_id: Number(userInfo.id),
+        exam_id: examData?.id?.toString(),
+        answers: Object.entries(userAnswers).reduce((acc, [questionId, answer]) => {
+          if (Array.isArray(answer)) {
+            acc[questionId] = answer.map(Number);
+          } else if (typeof answer === 'string') {
+            acc[questionId] = answer;
+          } else {
+            acc[questionId] = Number(answer);
+          }
+          return acc;
+        }, {}),
+        time_spent: Math.max(1, Math.floor((examData.duration * 60) - timeLeft))
       };
 
-      const response = await apiClient.post(
-        ADD_SUBMISSION_ROUTE.replace(':id', examId),
-        submissionData
-      );
+      // Log payload đã format
+      console.log('Formatted payload:', {
+        payload,
+        headers: apiClient.defaults.headers
+      });
 
-      if (response.data) {
-        const message = `Nộp bài thành công!\n\n` +
-          `Tổng số câu hỏi: ${examData.questions.length}\n` +
-          `Số câu đã làm: ${answeredCount}\n` +
-          `Số câu chưa làm: ${examData.questions.length - answeredCount}\n` +
-          `Số câu được chọn: ${selectedQuestions.length}`;
-        
-        submitExamLogic(message);
-      } else {
-        alert('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại!');
+      const response = await apiClient.post(ADD_SUBMISSION_ROUTE, payload);
+      
+      // Log response
+      console.log('Submission response:', response.data);
+
+      if (response.status === 201) {
+        toast.success('Nộp bài thành công!');
+        navigate('/student/exams');
       }
-    } catch (error) {
-      console.error('Error submitting exam:', error);
-      alert('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại!');
-    }
-  };
 
-  const submitExamLogic = (message) => {
-    alert(message); 
-    navigate('/student/exams'); 
+    } catch (error) {
+      // Log chi tiết lỗi
+      console.error('Submit error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        payload
+      });
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi nộp bài!');
+    }
   };
 
   const answeredCount = useMemo(() => {
@@ -231,30 +259,28 @@ const ExamTakingPage = () => {
     return `${hours > 0 ? String(hours).padStart(2, '0') + ':' : ''}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }, [timeLeft]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
-        <p className="text-xl">Đang tải dữ liệu bài thi...</p>
-      </div>
-    );
+  // Loading state
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-screen">
+      <p>Đang tải...</p>
+    </div>;
   }
 
+  // Error state
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
-        <p className="text-xl text-red-500">{error}</p>
+      <div className="flex flex-col justify-center items-center h-screen bg-gray-100">
+        <p className="text-xl text-red-600 mb-4">Lỗi: {error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Thử lại
+        </button>
       </div>
     );
   }
-
-  if (!examData) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
-        <p className="text-xl">Không tìm thấy dữ liệu bài thi.</p>
-      </div>
-    );
-  }
-
+  
   if (isTimeUp) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-gray-100 p-4">
