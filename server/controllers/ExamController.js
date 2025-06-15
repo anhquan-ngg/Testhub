@@ -94,12 +94,9 @@ export const updateExam = async (req, res, next) => {
             questions // Mảng các id câu hỏi mới
         } = req.body;
 
-        console.log('Update Exam - ID:', id);
-        console.log('Update Exam - Body:', req.body);
-
         // Tìm bài thi
         const exam = await Exam.findByPk(id);
-        console.log('Found Exam:', exam);
+
         if (!exam) {
             return res.status(404).json({ message: 'Không tìm thấy bài thi' });
         }
@@ -129,8 +126,7 @@ export const updateExam = async (req, res, next) => {
                     exam_id: id,
                     question_id: question.id // Lấy ID từ object câu hỏi
                 }));
-
-                console.log('ExamQuestions to create:', examQuestions);
+                
                 await ExamQuestion.bulkCreate(examQuestions, { transaction });
             }
 

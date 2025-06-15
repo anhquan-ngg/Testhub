@@ -6,13 +6,17 @@ import Submission from './SubmissionModel.js';
 import UserExam from './UserExamModel.js';
 
 // User associations
-User.hasMany(Submission, { foreignKey: 'user_id' });
+User.hasMany(Submission, { foreignKey: 'student_id' });
+Submission.belongsTo(User, { foreignKey: 'student_id' });
+
 User.belongsToMany(Exam, { through: UserExam, foreignKey: 'user_id' });
+Exam.belongsToMany(User, { through: UserExam, otherKey: 'user_id', foreignKey: 'exam_id' });
+UserExam.belongsTo(User, { foreignKey: 'user_id' });
+UserExam.belongsTo(Exam, { foreignKey: 'exam_id' });
 
 // Exam associations
 Exam.hasMany(Submission, { foreignKey: 'exam_id' });
-Exam.belongsToMany(Question, { through: ExamQuestion, foreignKey: 'exam_id' });
-Exam.belongsToMany(User, { through: UserExam, foreignKey: 'exam_id' });
+Submission.belongsTo(Exam, { foreignKey: 'exam_id' });
 
 // Question associations
 Exam.belongsToMany(Question, {
@@ -28,14 +32,5 @@ Question.belongsToMany(Exam, {
     otherKey: 'exam_id',
     as: 'exams'
 });
-
-
-// Submission associations
-Submission.belongsTo(User, { foreignKey: 'user_id' });
-Submission.belongsTo(Exam, { foreignKey: 'exam_id' });
-
-// UserExam associations
-UserExam.belongsTo(User, { foreignKey: 'user_id' });
-UserExam.belongsTo(Exam, { foreignKey: 'exam_id' });
 
 export { User, Exam, Question, ExamQuestion, Submission, UserExam };

@@ -9,6 +9,7 @@ import { Search, BookOpen, Award, Clock, RefreshCw } from 'lucide-react';
 import { useAppStore } from '@/store';
 import { apiClient } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { GET_STUDENT_REGISTRATIONS_ROUTE } from '@/utils/constants';
 
 const StudentResults = () => {
   const navigate = useNavigate();
@@ -34,10 +35,11 @@ const StudentResults = () => {
 
   const fetchSubmissions = async () => {
     try {
-      setLoading(true);
-      const response = await apiClient.get(`/api/submissions/student/${userInfo.id}`);
-      setSubmissions(response.data);
-      calculateStats(response.data);
+      // setLoading(true);
+      const response = await apiClient.get(`${GET_STUDENT_REGISTRATIONS_ROUTE}/${userInfo.id}`, {withCredentials: true});
+      console.log('Fetched submissions:', response.data);
+      // setSubmissions(response.data);
+      // calculateStats(response.data);
     } catch (error) {
       console.error('Error fetching submissions:', error);
       toast.error('Không thể tải danh sách kết quả bài thi');
@@ -52,12 +54,12 @@ const StudentResults = () => {
       return;
     }
 
-    const totalScore = data.reduce((sum, sub) => sum + sub.score, 0);
-    const totalPossibleScore = data.reduce((sum, sub) => sum + sub.Exam.total_score, 0);
-    const averagePercentage = totalPossibleScore > 0 ? (totalScore / totalPossibleScore) * 100 : 0;
+    const totalScore = 0  //data.reduce((sum, sub) => sum + sub.score, 0) || 0 ;
+    const totalPossibleScore = 10 // data.reduce((sum, sub) => sum + sub.Exam.total_score, 0) || 0;
+    const averagePercentage = 0 // totalPossibleScore > 0 ? (totalScore / totalPossibleScore) * 100 : 0 ;
     
-    const highestPercentage = Math.max(...data.map(sub => (sub.score / sub.Exam.total_score) * 100));
-    const totalTime = data.reduce((sum, sub) => sum + sub.time_taken, 0);
+    const highestPercentage = 0 //Math.max(...data.map(sub => (sub.score / sub.Exam.total_score) * 100)) || 0;
+    const totalTime = 0 //data.reduce((sum, sub) => sum + sub.time_taken, 0) || 0;
 
     setStats({
       totalExams: data.length,

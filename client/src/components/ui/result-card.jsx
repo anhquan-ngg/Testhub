@@ -10,8 +10,9 @@ const ResultCard = ({
   onViewDetail,
   className 
 }) => {
-  const { score, Exam, submitted_at, time_taken, total_questions, correct_answers } = submission;
-  const percentage = (score / Exam.total_score) * 100;
+  // const { score, Exam, submitted_at, time_taken, total_questions, correct_answers } = submission;
+  const { score, Exam, submitted_at, time_taken, total_questions, correct_answers } = {}
+  // const percentage = (score / Exam.id) * 100;
   
   const getScoreBadgeVariant = (percentage) => {
     if (percentage >= 80) return 'default'; // green
@@ -68,12 +69,12 @@ const ResultCard = ({
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700">Điểm số</span>
             <span className="text-lg font-bold text-gray-900">
-              {score}/{Exam.total_score}
+              {/* {score}/{Exam.id} */}
             </span>
           </div>
           <ProgressBar 
             value={score} 
-            max={Exam.total_score} 
+            // max={Exam.id} 
             showLabel={false}
             size="sm"
           />

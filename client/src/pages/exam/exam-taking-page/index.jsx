@@ -188,22 +188,13 @@ const ExamTakingPage = () => {
 
   const handleSubmitExam = async () => {
     try {
-      if (!examData) {
-        toast.error('Không tìm thấy thông tin bài thi!');
+      if (!examData || !userInfo || !userInfo.id) {
+        toast.error('Thiếu thông tin cần thiết để nộp bài!');
         return;
       }
 
-      // Log dữ liệu trước khi format
-      console.log('Raw data:', {
-        examData,
-        userAnswers,
-        timeLeft
-      });
-
-      const payload = {
-        student_id: Number(userInfo.id),
-        exam_id: examData?.id?.toString(),
-        answers: Object.entries(userAnswers).reduce((acc, [questionId, answer]) => {
+      const answers = Object.entries(userAnswers).reduce((acc, [questionId, answer]) => {
+        if (answer !== null && answer !== undefined && answer !== '') {
           if (Array.isArray(answer)) {
             acc[questionId] = answer.map(Number);
           } else if (typeof answer === 'string') {
@@ -211,21 +202,30 @@ const ExamTakingPage = () => {
           } else {
             acc[questionId] = Number(answer);
           }
-          return acc;
-        }, {}),
+        }
+        return acc;
+      }, {});
+
+      if (Object.keys(answers).length === 0) {
+        toast.error('Bạn chưa trả lời câu hỏi nào!');
+        return;
+      }
+
+      const payload = {
+        student_id: Number(userInfo.id),
+        exam_id: examData.id.toString(),
+        answers,
         time_spent: Math.max(1, Math.floor((examData.duration * 60) - timeLeft))
       };
 
-      // Log payload đã format
-      console.log('Formatted payload:', {
-        payload,
-        headers: apiClient.defaults.headers
-      });
+      console.log('Submitting payload:', payload);
 
-      const response = await apiClient.post(ADD_SUBMISSION_ROUTE, payload);
-      
-      // Log response
-      console.log('Submission response:', response.data);
+      const response = await apiClient.post(ADD_SUBMISSION_ROUTE, payload, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
 
       if (response.status === 201) {
         toast.success('Nộp bài thành công!');
@@ -233,14 +233,18 @@ const ExamTakingPage = () => {
       }
 
     } catch (error) {
-      // Log chi tiết lỗi
-      console.error('Submit error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        payload
+      console.error('Submit error:', {
+        error,
       });
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi nộp bài!');
+
+      if (error.response?.status === 400) {
+        toast.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại!');
+      } else if (error.response?.status === 401) {
+        toast.error('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại!');
+        navigate('/login');
+      } else {
+        toast.error('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại!');
+      }
     }
   };
 

@@ -31,13 +31,11 @@ export const PATCH_QUESTION_ROUTE = `${QUESTIONS_ROUTE}/patch-question`;
 export const DELETE_QUESTION_ROUTE = `${QUESTIONS_ROUTE}/delete-question`;
 
 export const SUBMISSIONS_ROUTE = "api/submissions";
-export const ADD_SUBMISSION_ROUTE = `${SUBMISSIONS_ROUTE}/submit-exam`;
+export const ADD_SUBMISSION_ROUTE = `${SUBMISSIONS_ROUTE}/add-submission`;
 export const GET_STUDENT_SUBMISSIONS_ROUTE = `${SUBMISSIONS_ROUTE}/student`;
 export const GET_SUBMISSION_RESULT_ROUTE = `${SUBMISSIONS_ROUTE}`;
 
 export const USER_EXAMS_ROUTE = "api/user-exams";
 export const REGISTER_EXAM_ROUTE = `${USER_EXAMS_ROUTE}/register`;
 export const GET_STUDENT_REGISTRATIONS_ROUTE = `${USER_EXAMS_ROUTE}/student`;
-export const UNREGISTER_EXAM_ROUTE = `${USER_EXAMS_ROUTE}/unregister`;
-export const CHECK_REGISTRATION_STATUS_ROUTE = `${USER_EXAMS_ROUTE}/check`;
 export const GET_STATUS_ROUTE = `${USER_EXAMS_ROUTE}/get-status`;

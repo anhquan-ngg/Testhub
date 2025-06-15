@@ -4,6 +4,7 @@ import { UserExam, User, Exam } from '../models/index.js';
 export const registerExam = async (req, res) => {
   try {
     // Kiểm tra xem đã đăng ký chưa
+    const  { user_id, exam_id } = req.body;
     const existingRegistration = await UserExam.findOne({
       where: { user_id, exam_id }
     });
@@ -54,12 +55,27 @@ export const getStatus = async (req, res) => {
 
 // Lấy danh sách bài thi đã đăng ký
 export const getStudentRegistrations = async (req, res) => {
+  try {
+    const { studentId } = req.params;
 
+    if (!studentId) {
+      return res.status(400).json({ message: 'Thiếu thông tin sinh viên' });
+    }
+
+    const registrations = await UserExam.findAll({
+      where: { user_id: studentId },
+      include: [
+        {
+          model: Exam,
+          attributes: []
+        }
+      ]
+    });
+    return res.status(200).json(registrations);
+  } catch (error) {
+    console.error('Error fetching student registrations:', error);
+    return res.status(500).json({ message: 'Server bị lỗi' });
+  }
 };
 
-// // // Hủy đăng ký bài thi
-export const unregisterExam = async (req, res) => {
-
-}
-// };
 

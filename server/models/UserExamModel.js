@@ -27,6 +27,11 @@ const UserExam = sequelize.define('UserExam', {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
   },
+  total_score: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: null
+  },
   status: {
     type: DataTypes.ENUM('registered', 'completed'),
     defaultValue: 'registered'
