@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResultCard } from '@/components/ui/result-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Search, BookOpen, Award, Clock, RefreshCw } from 'lucide-react';
 import { useAppStore } from '@/store';
 import { apiClient } from '@/lib/api-client';
@@ -22,7 +21,6 @@ const StudentResults = () => {
     totalExams: 0,
     averageScore: 0,
     highestScore: 0,
-    totalTimeSpent: 0
   });
 
   useEffect(() => {
@@ -35,11 +33,11 @@ const StudentResults = () => {
 
   const fetchSubmissions = async () => {
     try {
-      // setLoading(true);
+      setLoading(true);
       const response = await apiClient.get(`${GET_STUDENT_REGISTRATIONS_ROUTE}/${userInfo.id}`, {withCredentials: true});
+      setSubmissions(response.data.filter(sub => sub.status === 'completed'));
       console.log('Fetched submissions:', response.data);
-      // setSubmissions(response.data);
-      // calculateStats(response.data);
+      calculateStats(response.data);
     } catch (error) {
       console.error('Error fetching submissions:', error);
       toast.error('Không thể tải danh sách kết quả bài thi');
@@ -50,22 +48,20 @@ const StudentResults = () => {
 
   const calculateStats = (data) => {
     if (data.length === 0) {
-      setStats({ totalExams: 0, averageScore: 0, highestScore: 0, totalTimeSpent: 0 });
+      setStats({ totalExams: 0, averageScore: 0, highestScore: 0 });
       return;
     }
 
-    const totalScore = 0  //data.reduce((sum, sub) => sum + sub.score, 0) || 0 ;
-    const totalPossibleScore = 10 // data.reduce((sum, sub) => sum + sub.Exam.total_score, 0) || 0;
-    const averagePercentage = 0 // totalPossibleScore > 0 ? (totalScore / totalPossibleScore) * 100 : 0 ;
-    
-    const highestPercentage = 0 //Math.max(...data.map(sub => (sub.score / sub.Exam.total_score) * 100)) || 0;
-    const totalTime = 0 //data.reduce((sum, sub) => sum + sub.time_taken, 0) || 0;
+    const completedSubmissions = data.filter(sub => sub.status === 'completed');
+    const totalScore = completedSubmissions.reduce ((sum, sub) => sum + sub.total_score, 0);
+    const length = completedSubmissions.length;
+    const averagePercentage =  totalScore / length;  
+    const highestPercentage = Math.max(...data.map(sub => sub.total_score));
 
     setStats({
-      totalExams: data.length,
+      totalExams: completedSubmissions.length,
       averageScore: averagePercentage,
       highestScore: highestPercentage,
-      totalTimeSpent: totalTime
     });
   };
 
@@ -80,10 +76,6 @@ const StudentResults = () => {
       submission.Exam.subject.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredSubmissions(filtered);
-  };
-
-  const handleViewDetail = (submissionId) => {
-    navigate(`/student/results/${submissionId}`);
   };
 
   const formatTime = (minutes) => {
@@ -117,12 +109,12 @@ const StudentResults = () => {
       </div>
 
       {/* Thống kê tổng quan */}
-      <div className="pb-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="pb-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="bg-white border-none">
           <CardContent className="flex items-center p-6">
             <BookOpen className="h-8 w-8 text-blue-600" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Tổng số bài thi</p>
+              <p className="text-sm font-medium text-gray-600">Tổng số bài thi đã làm</p>
               <p className="text-2xl font-bold">{stats.totalExams}</p>
             </div>
           </CardContent>
@@ -133,7 +125,7 @@ const StudentResults = () => {
             <Award className="h-8 w-8 text-green-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Điểm trung bình</p>
-              <p className="text-2xl font-bold">{stats.averageScore.toFixed(1)}%</p>
+              <p className="text-2xl font-bold">{stats.averageScore.toFixed(1)}</p>
             </div>
           </CardContent>
         </Card>
@@ -143,17 +135,7 @@ const StudentResults = () => {
             <Award className="h-8 w-8 text-yellow-600" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Điểm cao nhất</p>
-              <p className="text-2xl font-bold">{stats.highestScore.toFixed(1)}%</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white border-none">
-          <CardContent className="flex items-center p-6">
-            <Clock className="h-8 w-8 text-purple-600" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Tổng thời gian</p>
-              <p className="text-2xl font-bold">{formatTime(stats.totalTimeSpent)}</p>
+              <p className="text-2xl font-bold">{stats.highestScore.toFixed(1)}</p>
             </div>
           </CardContent>
         </Card>
@@ -196,17 +178,18 @@ const StudentResults = () => {
             )}
           </CardContent>
         </Card>
-      ) : (
+      ) : 
+      (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredSubmissions.map((submission) => (
             <ResultCard
               key={submission.id}
               submission={submission}
-              onViewDetail={handleViewDetail}
             />
           ))}
         </div>
-      )}
+      )
+      }
     </div>
   );
 };

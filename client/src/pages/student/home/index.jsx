@@ -33,7 +33,7 @@ const StudentHome = () => {
   return (
     <div className="pl-12 py-8 pr-8">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Bài thi</h2>
+        <h1 className="text-3xl font-bold text-gray-900">Bài thi</h1>
         <button className="px-6 py-2 bg-white text-blue-700 rounded-full hover:bg-blue-50">
           Xem tất cả các bài thi
         </button>

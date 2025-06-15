@@ -5,33 +5,21 @@ import { Button } from './button';
 import { Clock, Calendar, BookOpen, Award } from 'lucide-react';
 import { ProgressBar } from './progress-bar';
 
+const subjectMap = {
+  'math': 'Toán',
+  'physics': 'Vật lý',
+  'chemistry': 'Hóa học',
+  'english': 'Tiếng Anh',
+}
+
 const ResultCard = ({ 
   submission, 
-  onViewDetail,
   className 
 }) => {
-  // const { score, Exam, submitted_at, time_taken, total_questions, correct_answers } = submission;
-  const { score, Exam, submitted_at, time_taken, total_questions, correct_answers } = {}
-  // const percentage = (score / Exam.id) * 100;
+  const { Exam, updatedAt, total_score } = submission
   
-  const getScoreBadgeVariant = (percentage) => {
-    if (percentage >= 80) return 'default'; // green
-    if (percentage >= 60) return 'secondary'; // yellow
-    return 'destructive'; // red
-  };
-
-  const getScoreLabel = (percentage) => {
-    if (percentage >= 80) return 'Xuất sắc';
-    if (percentage >= 70) return 'Giỏi';
-    if (percentage >= 60) return 'Khá';
-    if (percentage >= 50) return 'Trung bình';
-    return 'Yếu';
-  };
-
-  const formatDuration = (minutes) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+  const formatDuration = (second) => {
+    return '' + Math.floor(second / 60) + ' phút ';
   };
 
   const formatDate = (dateString) => {
@@ -45,7 +33,7 @@ const ResultCard = ({
   };
 
   return (
-    <Card className={`hover:shadow-md transition-shadow ${className}`}>
+    <Card className={`bg-white border-none hover:shadow-md transition-shadow ${className}`}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div className="flex-1">
@@ -54,12 +42,9 @@ const ResultCard = ({
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <BookOpen className="w-4 h-4" />
-              <span>{Exam.subject}</span>
+              <span>{subjectMap[Exam.subject]}</span>
             </div>
           </div>
-          <Badge variant={getScoreBadgeVariant(percentage)}>
-            {getScoreLabel(percentage)}
-          </Badge>
         </div>
       </CardHeader>
       
@@ -69,12 +54,12 @@ const ResultCard = ({
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-700">Điểm số</span>
             <span className="text-lg font-bold text-gray-900">
-              {/* {score}/{Exam.id} */}
+              {Math.round(total_score * 10) / 10}
             </span>
           </div>
           <ProgressBar 
-            value={score} 
-            // max={Exam.id} 
+            value={total_score} 
+            max={10} 
             showLabel={false}
             size="sm"
           />
@@ -85,29 +70,27 @@ const ResultCard = ({
           <div className="flex items-center gap-2">
             <Award className="w-4 h-4 text-green-600" />
             <span className="text-gray-600">Đúng:</span>
-            <span className="font-medium">{correct_answers}/{total_questions}</span>
+            <span className="font-medium">
+              {Exam.correctCount}/{Exam.submissionCount}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-blue-600" />
             <span className="text-gray-600">Thời gian:</span>
-            <span className="font-medium">{formatDuration(time_taken)}</span>
+            <span className="font-medium">
+              {formatDuration(Exam.Submissions[0].time_spent)}
+            </span>
           </div>
         </div>
 
         {/* Ngày làm bài */}
         <div className="flex items-center gap-2 text-sm text-gray-600 pt-2 border-t">
           <Calendar className="w-4 h-4" />
-          <span>Hoàn thành lúc: {formatDate(submitted_at)}</span>
+          <span>Hoàn thành{' '}
+            {formatDate(updatedAt)}
+            </span>
         </div>
 
-        {/* Nút xem chi tiết */}
-        <Button 
-          variant="outline" 
-          className="w-full mt-4"
-          onClick={() => onViewDetail(submission.id)}
-        >
-          Xem chi tiết kết quả
-        </Button>
       </CardContent>
     </Card>
   );

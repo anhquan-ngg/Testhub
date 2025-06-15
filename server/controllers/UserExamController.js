@@ -1,4 +1,5 @@
-import { UserExam, User, Exam } from '../models/index.js';
+import { UserExam, User, Exam, Submission } from '../models/index.js';
+import sequelize from 'sequelize';
 
 // Đăng ký bài thi
 export const registerExam = async (req, res) => {
@@ -67,15 +68,50 @@ export const getStudentRegistrations = async (req, res) => {
       include: [
         {
           model: Exam,
-          attributes: []
+          attributes: [
+            'title', 
+            'subject', 
+            'duration',
+            [
+              sequelize.literal(`(
+                SELECT COUNT(*)
+                FROM submissions
+                WHERE 
+                  submissions.student_id = ${studentId}
+                  AND submissions.exam_id = "Exam".id
+              )`),
+              'submissionCount'
+            ],
+            [
+              sequelize.literal(`(
+                SELECT COUNT(*)
+                FROM submissions
+                WHERE 
+                  submissions.student_id = ${studentId}
+                  AND submissions.exam_id = "Exam".id
+                  AND submissions.is_correct = true
+              )`),
+              'correctCount'
+            ]
+          ],
+          include: [
+            {
+              model: Submission,
+              attributes: ['time_spent'],
+              where: { student_id: studentId },
+              required: false // Makes it a LEFT JOIN
+            }
+          ]
         }
       ]
     });
+    console.log('Registrations:', registrations);
     return res.status(200).json(registrations);
   } catch (error) {
     console.error('Error fetching student registrations:', error);
     return res.status(500).json({ message: 'Server bị lỗi' });
   }
 };
+
 
 

@@ -14,7 +14,6 @@ import StudentHome from './pages/student/home';
 import StudentProfile from './pages/student/profile';
 import ExamTakingPage from './pages/exam/exam-taking-page';
 import StudentResults from './pages/student/results';
-import ResultDetail from './pages/student/results/detail';
 import ExamRegistration from './pages/student/exam-registration';
 
 // Admin pages
@@ -132,7 +131,6 @@ function App() {
             <Route path="exams" element={<StudentHome />} />
             <Route path="profile" element={<StudentProfile />} />
             <Route path="results" element={<StudentResults />} />
-            <Route path="results/:submissionId" element={<ResultDetail />} />
             <Route index element={<Navigate to="/student/exams" />} />
           </Route>
 

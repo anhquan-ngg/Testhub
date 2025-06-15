@@ -1,9 +1,5 @@
 import { Submission, Exam, Question, User, UserExam} from '../models/index.js';
 
-export const getListSubmissions = async (req, res) => {
-
-}
-
 const checkIsCorrect = (submissions) => {
     return submissions.map(submission => {
         const question = Question.findByPk(submission.question_id);
@@ -141,17 +137,3 @@ export const addSubmission = async (req, res) => {
         });
     }
 }
-
-export const getDetailSubmission = async (req, res) => {
-
-}
-
-// Lấy danh sách bài thi đã làm của sinh viên
-export const getStudentSubmissions = async (req, res) => {
-
-};
-
-// Lấy chi tiết kết quả một bài thi
-export const getSubmissionResult = async (req, res) => {
-
-};

@@ -22,7 +22,8 @@ import Edit from "@/assets/icon/edit.svg";
 import { useAppStore } from "@/store";
 import { useState, useEffect } from 'react';
 import { apiClient } from "@/lib/api-client";
-import { GET_USER_INFO_ROUTE, UPDATE_USER_INFO_ROUTE } from "@/utils/constants";
+import { GET_USER_INFO_ROUTE, UPDATE_USER_INFO_ROUTE, GET_STUDENT_REGISTRATIONS_ROUTE } from "@/utils/constants";
+import { set } from "react-hook-form";
  
 function StudentProfile() {
   const {userInfo, setUserInfo} = useAppStore();
@@ -33,24 +34,29 @@ function StudentProfile() {
     phone: '',
     address: ''
   });
+  const [listTest, setListTest] = useState([]);
   
-  const fetchUserInfo = async() => {
+  const fetchData = async() => {
     try {
-      const response = await apiClient.get(GET_USER_INFO_ROUTE);
-      setUserInfo(response.data);
+      const [ getUserInfo, getListTest ] = await Promise.all([
+        apiClient.get(GET_USER_INFO_ROUTE, {withCredentials: true}),
+        apiClient.get(`${GET_STUDENT_REGISTRATIONS_ROUTE}/${userInfo.id}`, {withCredentials: true})
+      ]);
+      setUserInfo(getUserInfo.data);
       setFormData({
-        full_name: response.data.full_name,
-        school: response.data.school,
-        phone: response.data.phone,
-        address: response.data.address
+        full_name: getUserInfo.data.full_name,
+        school: getUserInfo.data.school,
+        phone: getUserInfo.data.phone,
+        address: getUserInfo.data.address
       });
+      setListTest(getListTest.data.filter(test => test.status === 'registered'));
     } catch (error) {
       console.error('Error fetching user info:', error);
     }
   }
 
   useEffect(() => {
-    fetchUserInfo();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -91,192 +97,153 @@ function StudentProfile() {
   }
 
   return (
-    <div className="p-12 w-full max-w-[1034px] max-md:mt-10 max-md:max-w-full">
-      <div className="max-w-full w-[771px]">
-        <div className="flex gap-5 max-md:flex-col">
-          {/* User Profile Card */}
-          <div className="flex-1">
-            <Card className="h-full bg-white border-none rounded-xl">
-              <CardContent className="flex flex-col items-center pt-6 pb-9">
-                <img
-                  src={Camera}
-                  alt="Profile icon"
-                  className="object-contain self-start w-10 aspect-square"
-                />
-                <Avatar className="mt-2 w-[100px] h-[100px]">
-                  <AvatarImage
-                    src={userInfo?.avatar}
-                    alt="User"
-                  />
-                  <AvatarFallback>UN</AvatarFallback>
-                </Avatar>
-                <div className="mt-1 text-base font-medium">{formData.full_name || 'Chưa có tên'}</div>
-              </CardContent>
-            </Card>
-          </div>
+    <div className="p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header - Responsive */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center sm:text-left">
+            Hồ sơ cá nhân
+          </h1>
+        </div>
 
-          {/* Completed Tests Card */}
-          <div className="flex-1">
-            <Card className="h-full bg-white border-none rounded-xl">
-              <CardContent className="flex flex-col items-center pt-6 pb-9">
-                <img
-                  src={Frame}
-                  alt="Completed tests"
-                  className="object-contain self-start w-10 aspect-square"
+        {/* Top Cards Section - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          {/* User Profile Card */}
+          <Card className="bg-white border-none shadow-sm rounded-xl">
+            <CardContent className="flex flex-col items-center pt-6 pb-6 sm:pt-8 sm:pb-8">
+              <img
+                src={Camera}
+                alt="Profile icon"
+                className="object-contain self-start w-8 h-8 sm:w-10 sm:h-10 mb-2"
+              />
+              <Avatar className="w-20 h-20 sm:w-24 sm:h-24 lg:w-[100px] lg:h-[100px]">
+                <AvatarImage
+                  src={userInfo?.avatar}
+                  alt="User"
                 />
-                <Badge
-                  variant="secondary"
-                  className="mt-5 px-8 py-8 text-xl bg-cyan-50 text-blue-950 rounded-full h-[72px] w-[72px] flex items-center justify-center"
-                >
-                  0
-                </Badge>
-                <div className="mt-5 text-base font-medium">Bài đã làm</div>
-              </CardContent>
-            </Card>
-          </div>
+                <AvatarFallback className="text-lg sm:text-xl">
+                  {formData.full_name ? formData.full_name.charAt(0).toUpperCase() : 'UN'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="mt-2 sm:mt-3 text-sm sm:text-base font-medium text-center px-2">
+                {formData.full_name || 'Chưa có tên'}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Pending Tests Card */}
-          <div className="flex-1">
-            <Card className="h-full bg-white border-none rounded-xl">
-              <CardContent className="flex flex-col items-center pt-6 pb-9">
-                <img
-                  src={Clipboard}
-                  alt="Pending tests"
-                  className="object-contain self-start w-10 aspect-square"
+          <Card className="bg-white border-none shadow-sm rounded-xl">
+            <CardContent className="flex flex-col items-center pt-6 pb-6 sm:pt-8 sm:pb-8">
+              <img
+                src={Clipboard}
+                alt="Pending tests"
+                className="object-contain self-start w-8 h-8 sm:w-10 sm:h-10 mb-2"
+              />
+              <Badge
+                variant="secondary"
+                className="mt-3 sm:mt-5 text-lg sm:text-xl text-orange-400 bg-orange-50 rounded-full h-16 w-16 sm:h-20 sm:w-20 lg:h-[72px] lg:w-[72px] flex items-center justify-center font-bold"
+              >
+                {listTest.filter(test => test.status === 'registered').length}
+              </Badge>
+              <div className="mt-3 sm:mt-5 text-sm sm:text-base font-medium text-center">
+                Bài cần làm
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Personal Information Section - Responsive */}
+        <Card className="bg-white border-none shadow-sm rounded-xl">
+          <CardHeader className="px-4 sm:px-6">
+            <h3 className="text-lg sm:text-xl font-medium">Thông tin cá nhân</h3>
+            <Separator className="mt-2" />
+          </CardHeader>
+          <CardContent className="px-4 sm:px-6">
+            <div className="space-y-4 sm:space-y-6">
+              {/* Email Field - Responsive */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="email" className="text-sm sm:text-base font-medium text-gray-700 min-w-0 sm:min-w-[120px]">
+                  Email:
+                </Label>
+                <div className="w-full sm:w-[330px] bg-zinc-300 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-neutral-600 break-all">
+                  {userInfo?.email}
+                </div>
+              </div>
+
+              {/* Full Name Field - Responsive */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="fullname" className="text-sm sm:text-base font-medium text-gray-700 min-w-0 sm:min-w-[120px]">
+                  Họ tên <span className="text-red-500">*</span>:
+                </Label>
+                <Input
+                  id="full_name"
+                  name="full_name"
+                  className="w-full sm:w-[330px] rounded-xl border-neutral-400 text-sm sm:text-base"
+                  value={formData.full_name}
+                  onChange={handleInputChange}
+                  placeholder="Nhập họ và tên"
                 />
-                <Badge
+              </div>
+
+              {/* School Field - Responsive */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="school" className="text-sm sm:text-base font-medium text-gray-700 min-w-0 sm:min-w-[120px]">
+                  Trường học:
+                </Label>
+                <Input
+                  id="school"
+                  name="school"
+                  className="w-full sm:w-[330px] rounded-xl border-neutral-400 text-sm sm:text-base"
+                  value={formData.school}
+                  onChange={handleInputChange}
+                  placeholder="Nhập tên trường học"
+                />
+              </div>
+
+              {/* Phone Field - Responsive */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="phone" className="text-sm sm:text-base font-medium text-gray-700 min-w-0 sm:min-w-[120px]">
+                  Số điện thoại:
+                </Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  className="w-full sm:w-[330px] rounded-xl border-neutral-400 text-sm sm:text-base"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="Nhập số điện thoại"
+                />
+              </div>
+
+              {/* Address Field - Responsive */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
+                <Label htmlFor="address" className="text-sm sm:text-base font-medium text-gray-700 min-w-0 sm:min-w-[120px]">
+                  Địa chỉ:
+                </Label>
+                <Input
+                  id="address"
+                  name="address"
+                  className="w-full sm:w-[330px] rounded-xl border-neutral-400 text-sm sm:text-base"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="Nhập địa chỉ"
+                />
+              </div>
+
+              {/* Update Button - Responsive */}
+              <div className="flex justify-center sm:justify-end pt-4">
+                <Button
                   variant="secondary"
-                  className="mt-5 px-8 py-8 text-xl text-orange-400 bg-orange-50 rounded-full h-[72px] w-[72px] flex items-center justify-center"
+                  className="w-full sm:w-[330px] bg-slate-300 text-blue-700 rounded-xl cursor-pointer text-sm sm:text-base py-2 sm:py-2.5"
+                  onClick={handleUpdateInfo}
+                  disabled={isLoading}
                 >
-                  0
-                </Badge>
-                <div className="mt-5 text-base font-medium">Bài cần làm</div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-
-      {/* Personal Information and Profile Section */}
-      <div className="mt-5 max-md:max-w-full">
-        <div className="flex gap-5 max-md:flex-col">
-          {/* Personal Information Card */}
-          <div className="w-6/12 max-md:ml-0 max-md:w-full">
-            <Card className="w-127 h-full bg-white border-none">
-              <CardHeader>
-                <h3 className="text-xl font-medium">Thông tin cá nhân</h3>
-                <Separator className="mt-2" />
-              </CardHeader>
-              <CardContent className="px-6">
-                <div className="space-y-6">
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="email" className="text-base">
-                      Email :
-                    </Label>
-                    <div className="w-[330px] min-w-[240px] bg-zinc-300 rounded-xl px-4 py-2.5 text-sm text-neutral-400">
-                      {userInfo?.email}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="fullname" className="text-base">
-                      Họ tên <span className="text-red-500">*</span> :
-                    </Label>
-                    <Input
-                      id="full_name"
-                      name="full_name"
-                      className="w-[330px] rounded-xl border-neutral-400"
-                      value={formData.full_name}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="school" className="text-base">
-                      Trường học :
-                    </Label>
-                    <Input
-                      id="school"
-                      name="school"
-                      className="w-[330px] rounded-xl border-neutral-400"
-                      value={formData.school}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="phone" className="text-base">
-                      Số điện thoại :
-                    </Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      className="w-[330px] rounded-xl border-neutral-400"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <Label htmlFor="address" className="text-base">
-                      Địa chỉ :
-                    </Label>
-                    <Input
-                      id="address"
-                      name="address"
-                      className="w-[330px] rounded-xl border-neutral-400"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button
-                      variant="secondary"
-                      className="w-[330px] bg-slate-300 text-blue-700 rounded-xl cursor-pointer"
-                      onClick={handleUpdateInfo}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Đang cập nhật...' : 'Cập nhật thông tin'}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Profile Card */}
-          <div className="pl-10 w-6/12 max-md:ml-0 max-md:w-full">
-            <Card className="h-full w-127 bg-white border-none">
-              <CardHeader>
-                <h3 className="text-xl font-medium">Hồ sơ</h3>
-                <Separator className="mt-2" />
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-5 justify-between w-full">
-                  <div className="flex">
-                    <div className="py-5 pr-2 pl-5">
-                      <div className="bg-zinc-300 min-h-[100px] w-[75px]"></div>
-                    </div>
-                    <div className="flex flex-col items-start my-auto text-base font-medium">
-                      <div>{formData.full_name || 'Username'}</div>
-                      <div className="mt-1.5">Email : {userInfo?.email || 'user@email.com'}</div>
-                      <div className="mt-2">CCCD/CMND: XXXXXXXXXXXX</div>
-                      <div className="mt-2">Ngày sinh: XX/XX/XXXX</div>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="icon" className="p-0">
-                    <img
-                      src={Edit}
-                      alt="Edit"
-                      className="object-contain w-6 aspect-square"
-                    />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                  {isLoading ? 'Đang cập nhật...' : 'Cập nhật thông tin'}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
