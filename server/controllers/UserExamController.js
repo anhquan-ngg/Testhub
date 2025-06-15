@@ -105,7 +105,6 @@ export const getStudentRegistrations = async (req, res) => {
         }
       ]
     });
-    console.log('Registrations:', registrations);
     return res.status(200).json(registrations);
   } catch (error) {
     console.error('Error fetching student registrations:', error);
@@ -113,5 +112,59 @@ export const getStudentRegistrations = async (req, res) => {
   }
 };
 
+export const getExamDetails = async (req, res) => {
+  try {
+    const { examId } = req.params;
+
+    const examDetails = await UserExam.findAll({
+      where: { exam_id: examId },
+      include: [
+        {
+          model: Exam,
+          attributes: ['title', 'subject']
+        },
+        {
+          model: User,
+          attributes: [
+            'id', 'full_name', 'email',
+             [
+                sequelize.literal(`(
+                  SELECT COUNT(*)
+                  FROM submissions
+                  WHERE 
+                    submissions.student_id = "User".id
+                    AND submissions.exam_id = ${examId}
+                )`),
+                'submissionCount'
+              ],
+              [
+                sequelize.literal(`(
+                  SELECT COUNT(*)
+                  FROM submissions
+                  WHERE 
+                    submissions.student_id = "User".id
+                    AND submissions.exam_id = ${examId}
+                    AND submissions.is_correct = true
+                )`),
+                'correctCount'
+              ]
+          ],
+          include: [
+            {
+              model: Submission,
+              attributes: ['id', 'time_spent'],
+              where: { exam_id: examId },
+              required: false
+            }
+          ],
+        }
+      ]
+    });
+    res.status(200).json(examDetails);
+  } catch (error) {
+    console.error("Error fetching exam details:", error);
+    res.status(500).json({ message: "Error fetching exam details" });
+  }
+};
 
 

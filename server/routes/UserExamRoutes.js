@@ -3,7 +3,8 @@ import { verifyToken } from '../middlewares/AuthMiddleware.js';
 import { 
   registerExam, 
   getStudentRegistrations, 
-  getStatus
+  getStatus,
+  getExamDetails
 } from '../controllers/UserExamController.js';
 
 const userExamRoutes = Router();
@@ -16,5 +17,8 @@ userExamRoutes.get('/student/:studentId', verifyToken, getStudentRegistrations);
 
 // Kiểm tra trạng thái đăng ký
 userExamRoutes.get('/get-status/:userId/:examId', verifyToken, getStatus);
+
+// Lấy thông tin chi tiết bài thi
+userExamRoutes.get('/exam-details/:examId', getExamDetails);
 
 export default userExamRoutes;

@@ -20,6 +20,7 @@ import ExamRegistration from './pages/student/exam-registration';
 import AdminDashboard from './pages/admin/dashboard';
 import UserManagement from './pages/admin/users';
 import ExamManagement from './pages/admin/exams';
+import ExamDetail from './pages/admin/exams/detail';
 import CreateExam from './pages/admin/exams/create';
 import EditExam from './pages/admin/exams/edit';
 import QuestionManagement from './pages/admin/questions';
@@ -33,6 +34,7 @@ import Forbidden from './pages/error/Forbidden';
 // Layouts
 import AdminLayout from './layouts/AdminLayout';
 import StudentLayout from './layouts/StudentLayout';
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -111,6 +113,7 @@ function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="exams" element={<ExamManagement />} />
+            <Route path="exams/:id/details" element={<ExamDetail/>} />
             <Route path="exams/create" element={<CreateExam />} />
             <Route path="exams/:id/edit" element={<EditExam />} />
             <Route path="questions" element={<QuestionManagement />} />

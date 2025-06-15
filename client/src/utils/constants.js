@@ -36,4 +36,5 @@ export const ADD_SUBMISSION_ROUTE = `${SUBMISSIONS_ROUTE}/add-submission`;
 export const USER_EXAMS_ROUTE = "api/user-exams";
 export const REGISTER_EXAM_ROUTE = `${USER_EXAMS_ROUTE}/register`;
 export const GET_STUDENT_REGISTRATIONS_ROUTE = `${USER_EXAMS_ROUTE}/student`;
+export const GET_EXAM_DETAILS_ROUTE = `${USER_EXAMS_ROUTE}/exam-details`;
 export const GET_STATUS_ROUTE = `${USER_EXAMS_ROUTE}/get-status`;

@@ -96,8 +96,7 @@ const ExamManagement = () => {
   };
 
   const handleViewDetails = (exam) => {
-    setSelectedExam(exam);
-    setShowDetailsDialog(true);
+    navigate(`/admin/exams/${exam.id}/details`);
   };
 
   const getStatusBadgeClass = (status) => {
