@@ -19,6 +19,6 @@ userExamRoutes.get('/student/:studentId', verifyToken, getStudentRegistrations);
 userExamRoutes.get('/get-status/:userId/:examId', verifyToken, getStatus);
 
 // Lấy thông tin chi tiết bài thi
-userExamRoutes.get('/exam-details/:examId', getExamDetails);
+userExamRoutes.get('/exam-details/:examId', verifyToken, getExamDetails);
 
 export default userExamRoutes;

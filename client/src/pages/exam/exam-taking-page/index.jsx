@@ -1,23 +1,28 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ExamTakingHeader from './components/ExamTakingHeader';
 import QuestionDisplay from './components/QuestionDisplay';
 import QuickQuestionJumper from './components/QuickQuestionJumper';
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.jsx"
+import { Button } from "@/components/ui/button"
 import { apiClient } from '@/lib/api-client';
 import { GET_DETAIL_EXAM_ROUTE, ADD_SUBMISSION_ROUTE } from '@/utils/constants';
 import { useAppStore } from './../../../store/index';
 import { toast } from 'sonner';
+
+const subjectMap = {
+  'math': 'Toán',
+  'physics': 'Vật lí',
+  'chemistry': 'Hóa học',
+  'english': 'Tiếng Anh'
+}
 
 const ExamTakingPage = () => {
   const {userInfo} = useAppStore();
@@ -27,6 +32,8 @@ const ExamTakingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isTimeUp, setIsTimeUp] = useState(false);
+  // Tạo ref để kiểm tra trạng thái nộp bài
+  const isSubmitting = useRef(false);
 
   // State cho trang làm bài
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -65,6 +72,7 @@ const ExamTakingPage = () => {
         }
 
         setExamData(response.data);
+        setTimeLeft(response.data.duration);
 
       } catch (error) {
         console.error('Error details:', {
@@ -83,31 +91,103 @@ const ExamTakingPage = () => {
     }
   }, [examId]);
 
-  // Đầu tiên, thêm useCallback để memoize hàm handleTimeUp
+  // Tối ưu hóa hàm handleSubmitExam với useCallback
+  const handleSubmitExam = useCallback(async (isAutoSubmit = false) => {
+    try {
+      // Kiểm tra thông tin cần thiết
+      if (!examData || !userInfo || !userInfo.id) {
+        toast.error('Thiếu thông tin cần thiết để nộp bài!');
+        return;
+      }
+
+      // Ngăn chặn nộp bài nhiều lần
+      if (isSubmitting.current) {
+        return;
+      }
+      isSubmitting.current = true;
+
+      // Xử lý câu trả lời
+      const answers = Object.entries(userAnswers).reduce((acc, [questionId, answer]) => {
+        if (answer !== null && answer !== undefined && answer !== '') {
+          if (Array.isArray(answer)) {
+            acc[questionId] = answer.map(Number);
+          } else if (typeof answer === 'string') {
+            acc[questionId] = answer;
+          } else {
+            acc[questionId] = Number(answer);
+          }
+        }
+        return acc;
+      }, {});
+
+      // Chỉ kiểm tra câu trả lời trống khi nộp bài thủ công
+      if (!isAutoSubmit && Object.keys(answers).length === 0) {
+        toast.error('Bạn chưa trả lời câu hỏi nào!');
+        isSubmitting.current = false;
+        return;
+      }
+
+      const payload = {
+        student_id: Number(userInfo.id),
+        exam_id: examData.id.toString(),
+        answers,
+        time_spent: Math.max(1, Math.floor((examData.duration * 60) - timeLeft))
+      };
+
+      const response = await apiClient.post(ADD_SUBMISSION_ROUTE, payload, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 201) {
+        toast.success(isAutoSubmit ? 'Đã tự động nộp bài khi hết giờ!' : 'Nộp bài thành công!');
+        navigate('/student/exams');
+      }
+
+    } catch (error) {
+      console.error('Lỗi nộp bài:', error);
+      toast.error('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại!');
+    } finally {
+      isSubmitting.current = false;
+    }
+  }, [examData, userInfo, userAnswers, timeLeft, navigate]);
+
   const handleTimeUp = useCallback(() => {
     setIsTimeUp(true);
-    // Các xử lý khác khi hết giờ
-  }, []); // Mảng rỗng vì không phụ thuộc giá trị nào
+    handleSubmitExam(true); // Truyền true cho auto-submit
+  }, [handleSubmitExam]);
 
-  // // Sau đó sửa lại useEffect đếm ngược
-  // useEffect(() => {
-  //   // Chỉ bắt đầu đếm khi có thời gian và chưa hết giờ
-  //   if (timeLeft > 0 && !isTimeUp) {
-  //     const timer = setInterval(() => {
-  //       setTimeLeft((prevTime) => {
-  //         if (prevTime <= 1) {
-  //           clearInterval(timer);
-  //           handleTimeUp();
-  //           return 0;
-  //         }
-  //         return prevTime - 1;
-  //       });
-  //     }, 1000);
+  useEffect(() => {
+  if (timeLeft > 0 && !isTimeUp) {
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        // Show warning when 5 minutes remaining
+        if (prevTime === 300) {
+          toast.warning('Còn 5 phút làm bài!', {
+            duration: 5000
+          });
+        }
+        // Show warning when 1 minute remaining
+        if (prevTime === 60) {
+          toast.warning('Còn 1 phút làm bài!', {
+            duration: 5000
+          });
+        }
+        
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          handleTimeUp();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
 
-  //     // Cleanup function để clear interval khi component unmount
-  //     return () => clearInterval(timer);
-  //   }
-  // }, [timeLeft, isTimeUp, handleTimeUp]); // Thêm đầy đủ các dependencies
+    return () => clearInterval(timer);
+  }
+}, [timeLeft, isTimeUp, handleTimeUp]);
 
   const handleQuestionSelect = (index) => {
     if (index >= 0 && index < examData.questions.length) {
@@ -144,27 +224,6 @@ const ExamTakingPage = () => {
     });
   };
 
-  // Hàm xử lý chọn câu hỏi
-  const handleSelectQuestion = (questionId) => {
-    setSelectedQuestions(prev => {
-      if (prev.includes(questionId)) {
-        // Nếu câu hỏi đã được chọn, bỏ chọn nó
-        const newSelected = prev.filter(id => id !== questionId);
-        // Xóa đáp án của câu hỏi này khỏi formData
-        const newSelectedAnswers = { ...formData.selectedAnswers };
-        delete newSelectedAnswers[questionId];
-        setFormData(prev => ({
-          ...prev,
-          selectedAnswers: newSelectedAnswers
-        }));
-        return newSelected;
-      } else {
-        // Nếu câu hỏi chưa được chọn, thêm vào danh sách
-        return [...prev, questionId];
-      }
-    });
-  };
-
   // Hàm xử lý cập nhật đáp án cho câu hỏi được chọn
   const handleSelectedAnswerChange = (questionId, answer) => {
     if (selectedQuestions.includes(questionId)) {
@@ -178,76 +237,9 @@ const ExamTakingPage = () => {
     }
   };
 
-  // Hàm xử lý cập nhật ghi chú
-  const handleNoteChange = (note) => {
-    setFormData(prev => ({
-      ...prev,
-      note
-    }));
-  };
+  
 
-  const handleSubmitExam = async () => {
-    try {
-      if (!examData || !userInfo || !userInfo.id) {
-        toast.error('Thiếu thông tin cần thiết để nộp bài!');
-        return;
-      }
-
-      const answers = Object.entries(userAnswers).reduce((acc, [questionId, answer]) => {
-        if (answer !== null && answer !== undefined && answer !== '') {
-          if (Array.isArray(answer)) {
-            acc[questionId] = answer.map(Number);
-          } else if (typeof answer === 'string') {
-            acc[questionId] = answer;
-          } else {
-            acc[questionId] = Number(answer);
-          }
-        }
-        return acc;
-      }, {});
-
-      if (Object.keys(answers).length === 0) {
-        toast.error('Bạn chưa trả lời câu hỏi nào!');
-        return;
-      }
-
-      const payload = {
-        student_id: Number(userInfo.id),
-        exam_id: examData.id.toString(),
-        answers,
-        time_spent: Math.max(1, Math.floor((examData.duration * 60) - timeLeft))
-      };
-
-      console.log('Submitting payload:', payload);
-
-      const response = await apiClient.post(ADD_SUBMISSION_ROUTE, payload, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.status === 201) {
-        toast.success('Nộp bài thành công!');
-        navigate('/student/exams');
-      }
-
-    } catch (error) {
-      console.error('Submit error:', {
-        error,
-      });
-
-      if (error.response?.status === 400) {
-        toast.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại!');
-      } else if (error.response?.status === 401) {
-        toast.error('Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại!');
-        navigate('/login');
-      } else {
-        toast.error('Có lỗi xảy ra khi nộp bài. Vui lòng thử lại!');
-      }
-    }
-  };
-
+  
   const answeredCount = useMemo(() => {
     return Object.keys(userAnswers).filter(qid => {
         const answer = userAnswers[qid];
@@ -287,16 +279,29 @@ const ExamTakingPage = () => {
   
   if (isTimeUp) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-gray-100 p-4">
-        <h1 className="text-3xl font-bold text-red-600 mb-4">Hết giờ làm bài!</h1>
-        <p className="text-lg mb-6">Bài thi của bạn đã được ghi nhận.</p>
-        <button 
-          onClick={() => navigate('/student/exams')}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Quay lại trang danh sách bài thi
-        </button>
-      </div>
+      <AlertDialog 
+          className="bg-white border-none"
+          open={isTimeUp} 
+          onOpenChange={setIsTimeUp}>
+        <AlertDialogContent className="bg-white border-none max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-bold text-red-600">
+              Hết giờ làm bài!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              Bài thi của bạn đã được ghi nhận.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button 
+              onClick={() => navigate('/student/exams')}
+              className="w-full bg-[#b8cae8] text-[#0056d2]"
+            >
+              Quay lại trang danh sách bài thi
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     );
   }
 
@@ -307,7 +312,7 @@ const ExamTakingPage = () => {
         <ExamTakingHeader 
           examTitle={examData.title}
           timeLeft={formattedTimeLeft}
-          onTimeUp={handleTimeUp}
+          subject={subjectMap[examData.subject]}
         />
       </div>
       
@@ -359,39 +364,14 @@ const ExamTakingPage = () => {
               <div className="flex gap-4">
                 <button
                   onClick={() => handleMarkQuestion(examData.questions[currentQuestionIndex].id)}
-                  className="px-4 py-2 text-sm font-medium text-yellow-600 bg-yellow-50 border-gray-200 border-yellow-200 rounded-md hover:bg-yellow-100"
+                  className="px-4 py-2 text-sm font-medium text-yellow-600 bg-yellow-50 border-gray-200 rounded-md hover:bg-yellow-100"
                 >
                   {markedQuestions.includes(examData.questions[currentQuestionIndex].id)
                     ? "Bỏ đánh dấu"
                     : "Đánh dấu câu này"}
                 </button>
-                <button
-                  onClick={() => handleSelectQuestion(examData.questions[currentQuestionIndex].id)}
-                  className={`px-4 py-2 text-sm font-medium ${
-                    selectedQuestions.includes(examData.questions[currentQuestionIndex].id)
-                      ? "text-blue-600 bg-blue-50 border-blue-200"
-                      : "text-gray-600 bg-gray-50 border-gray-200"
-                  } rounded-md hover:bg-opacity-75`}
-                >
-                  {selectedQuestions.includes(examData.questions[currentQuestionIndex].id)
-                    ? "Bỏ chọn câu này"
-                    : "Chọn câu này"}
-                </button>
               </div>
             </div>
-
-            {/* Note section for selected questions */}
-            {selectedQuestions.length > 0 && (
-              <div className="mt-6 bg-white rounded-lg shadow-sm border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Ghi chú cho câu hỏi đã chọn</h3>
-                <textarea
-                  value={formData.note}
-                  onChange={(e) => handleNoteChange(e.target.value)}
-                  className="w-full h-32 p-2 border border-gray-200 rounded-md"
-                  placeholder="Nhập ghi chú của bạn ở đây..."
-                />
-              </div>
-            )}
           </div>
         </div>
 
@@ -401,20 +381,20 @@ const ExamTakingPage = () => {
             <h3 className="text-lg font-semibold text-gray-700 mb-2">Tổng quan</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Tổng số câu hỏi:</span>
+                <span className="text-sm font-medium text-gray-900">{examData.questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Đã làm:</span>
                 <span className="text-sm font-medium text-gray-900">{answeredCount}/{examData.questions.length}</span>
               </div>
               <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Chưa làm:</span>
+                <span className="text-sm font-medium text-gray-900">{examData.questions.length - answeredCount}/{examData.questions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Đánh dấu:</span>
                 <span className="text-sm font-medium text-gray-900">{markedQuestions.length}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Chưa làm:</span>
-                <span className="text-sm font-medium text-gray-900">{examData.questions.length - answeredCount}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Đã chọn:</span>
-                <span className="text-sm font-medium text-gray-900">{selectedQuestions.length}</span>
               </div>
             </div>
           </div>
