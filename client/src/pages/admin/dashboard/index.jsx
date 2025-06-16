@@ -135,8 +135,6 @@ const Dashboard = () => {
               <TableRow>
                 <TableHead>Tên bài thi</TableHead>
                 <TableHead>Môn học</TableHead>
-                <TableHead>Số người tham gia</TableHead>
-                <TableHead>Điểm trung bình</TableHead>
                 <TableHead>Trạng thái</TableHead>
               </TableRow>
             </TableHeader>
@@ -145,8 +143,6 @@ const Dashboard = () => {
                 <TableRow key={exam.id}>
                   <TableCell className="font-medium">{exam.title}</TableCell>
                   <TableCell>{subjectMap[exam.subject]}</TableCell>
-                  <TableCell>{exam.participants}</TableCell>
-                  <TableCell>{exam.avgScore}</TableCell>
                   <TableCell>
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -176,7 +172,7 @@ const Dashboard = () => {
         <CardHeader>
           <CardTitle>Học viên mới đăng ký</CardTitle>
           <CardDescription>
-            Danh sách học viên đăng ký trong tuần qua
+            Danh sách học viên đăng ký gần đây
           </CardDescription>
         </CardHeader>
         <CardContent>

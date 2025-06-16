@@ -40,11 +40,22 @@ const ExamManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedExam, setSelectedExam] = useState(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [filteredExams, setFilteredExams] = useState([]);
 
   useEffect(() => {
     fetchExams();
   }, [currentPage, searchTerm, statusFilter]);
 
+  useEffect(() => {
+    // Filter exams when searchTerm changes
+    const filtered = exams.filter(exam => 
+      exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      subjectMap[exam.subject]?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exam.subject.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredExams(filtered);
+  }, [searchTerm, exams]);
+  
   const fetchExams = async () => {
     try {
       setLoading(true);
@@ -61,12 +72,6 @@ const ExamManagement = () => {
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleStatusFilter = (e) => {
-    setStatusFilter(e.target.value);
-    setCurrentPage(1);
   };
 
   const handleCreateExam = () => {
@@ -80,7 +85,6 @@ const ExamManagement = () => {
   const handleDeleteExam = async (examId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa bài thi này?')) {
       try {
-        // await apiClient.delete(`/api/admin/exams/${examId}`);
         const response = await apiClient.delete(
           `${DELETE_EXAM_ROUTE}/${examId}`, 
           {withCredentials: true}
@@ -97,32 +101,6 @@ const ExamManagement = () => {
 
   const handleViewDetails = (exam) => {
     navigate(`/admin/exams/${exam.id}/details`);
-  };
-
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case 'upcoming':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'upcoming':
-        return 'Sắp diễn ra';
-      case 'active':
-        return 'Đang diễn ra';
-      case 'completed':
-        return 'Đã kết thúc';
-      default:
-        return status;
-    }
   };
 
   return (
@@ -144,22 +122,12 @@ const ExamManagement = () => {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Tìm kiếm bài thi..."
+            placeholder="Tìm kiếm bài thi theo tên hoặc môn học..."
             value={searchTerm}
             onChange={handleSearch}
             className="pl-9"
           />
         </div>
-        <select
-          value={statusFilter}
-          onChange={handleStatusFilter}
-          className="px-4 py-2 border rounded-md bg-background"
-        >
-          <option value="all">Tất cả trạng thái</option>
-          <option value="upcoming">Sắp diễn ra</option>
-          <option value="active">Đang diễn ra</option>
-          <option value="completed">Đã kết thúc</option>
-        </select>
       </div>
 
       {/* Exams Table */}
@@ -168,8 +136,7 @@ const ExamManagement = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Bài thi</TableHead>
-              <TableHead>Thông tin</TableHead>
-              <TableHead>Trạng thái</TableHead>
+              <TableHead>Thời lượng</TableHead>
               <TableHead>Thời gian</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
@@ -184,7 +151,7 @@ const ExamManagement = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              exams.map((exam) => (
+              filteredExams.map((exam) => (
                 <TableRow key={exam.id}>
                   <TableCell>
                     <div className="font-medium">{exam.title}</div>
@@ -193,17 +160,8 @@ const ExamManagement = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div>{exam.totalQuestions} câu hỏi</div>
                     <div className="text-sm text-muted-foreground">
                       {exam.duration} phút
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(exam.status)}`}>
-                      {getStatusText(exam.status)}
-                    </span>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      {exam.participants} thí sinh
                     </div>
                   </TableCell>
                   <TableCell>
@@ -240,29 +198,6 @@ const ExamManagement = () => {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
-          Trang {currentPage} / {totalPages}
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Trước
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Sau
-          </Button>
-        </div>
       </div>
 
       {/* Details Dialog */}

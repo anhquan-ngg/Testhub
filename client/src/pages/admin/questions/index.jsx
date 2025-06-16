@@ -47,10 +47,43 @@ const QuestionManagement = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [filteredQuestions, setFilteredQuestions] = useState([]);
 
   useEffect(() => {
     fetchQuestions();
-  }, [currentPage, searchTerm, subjectFilter, typeFilter]);
+  }, []);
+
+  useEffect(() => {
+    filterQuestions();
+  }, [questions, searchTerm, subjectFilter, typeFilter]);
+
+// Add the filter function
+  const filterQuestions = () => {
+    let filtered = [...questions];
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(question =>
+        question.text.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by subject
+    if (subjectFilter !== 'all') {
+      filtered = filtered.filter(question => 
+        question.subject === subjectFilter
+      );
+    }
+
+    // Filter by question type
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(question => 
+        question.type === typeFilter
+      );
+    }
+
+    setFilteredQuestions(filtered);
+  };
 
   const fetchQuestions = async () => {
     try {
@@ -60,14 +93,15 @@ const QuestionManagement = () => {
         {withCredentials: true}
       );
       if (response.status === 200) {
-        // Đảm bảo response.data.questions tồn tại, nếu không thì dùng mảng rỗng
-        setQuestions(response.data?.questions || []);
-        // Đảm bảo response.data.totalPages tồn tại, nếu không thì dùng 1
+        const questionData = response.data?.questions || [];
+        setQuestions(questionData);
+        setFilteredQuestions(questionData);
         setTotalPages(response.data?.totalPages || 1);
       }
     } catch (error) {
       console.error('Error fetching questions:', error);
       setQuestions([]);
+      setFilteredQuestions([]);
       setTotalPages(1);
     } finally {
       setLoading(false);
@@ -186,14 +220,14 @@ const QuestionManagement = () => {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : questions.length === 0 ? (
+            ) : filteredQuestions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan="5" className="text-center text-muted-foreground">
                   Không có câu hỏi nào
                 </TableCell>
               </TableRow>
             ) : (
-              questions.map((question) => (
+              filteredQuestions.map((question) => (
                 <TableRow key={question.id}>
                   <TableCell>
                     <div className="font-medium line-clamp-2">{question.text}</div>
@@ -232,29 +266,6 @@ const QuestionManagement = () => {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
-          Trang {currentPage} / {totalPages}
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Trước
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Sau
-          </Button>
-        </div>
       </div>
 
       {/* Details Dialog */}

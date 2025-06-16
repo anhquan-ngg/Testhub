@@ -8,14 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { apiClient } from '@/lib/api-client';
 import { GET_DETAIL_EXAM_ROUTE, PATCH_EXAM_ROUTE } from '@/utils/constants';
 import { useAppStore } from '@/store/index';

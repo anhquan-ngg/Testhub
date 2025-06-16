@@ -272,29 +272,6 @@ const UserManagement = () => {
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
-          Trang {currentPage} / {totalPages}
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            Trước
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
-            Sau
-          </Button>
-        </div>
-      </div>
-
       {/* Add/Edit Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="bg-white border-none shadow-lg">
