@@ -87,8 +87,14 @@ const ExamDetail = () => {
               {title}
             </h2>
             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
-              {subjectMap[subject]}
+              Môn: {subjectMap[subject]}
             </span>
+            <div className="flex">
+              <h2 className="text-base font-semibold text-gray-800">Số lượng thí sinh đã làm bài: </h2>
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
+                {exams.length}
+              </span>
+            </div>
           </div>
         </div>
 

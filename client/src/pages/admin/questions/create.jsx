@@ -36,7 +36,7 @@ const CreateQuestion = () => {
       { text: '', is_correct: false },
       { text: '', is_correct: false }
     ],
-    correct_anwser: '', // Đáp án cho câu hỏi tự luận
+    correct_answer: '', // Đáp án cho câu hỏi tự luận
   });
 
   const handleInputChange = (e) => {
@@ -110,7 +110,7 @@ const CreateQuestion = () => {
         return;
       }
     } else if (formData.type === 'fill-in-blank') {
-      if (!formData.correct_anwser.trim()) {
+      if (!formData.correct_answer.trim()) {
         toast.error('Vui lòng nhập đáp án mẫu cho câu hỏi tự luận');
         return;
       }
@@ -237,8 +237,8 @@ const CreateQuestion = () => {
           <div className="space-y-2">
             <label className="block font-medium">Đáp án mẫu</label>
             <Textarea
-              name="correct_anwser"
-              value={formData.correct_anwser}
+              name="correct_answer"
+              value={formData.correct_answer}
               onChange={handleInputChange}
               placeholder="Nhập đáp án mẫu cho câu hỏi tự luận..."
               className="min-h-[100px]"
