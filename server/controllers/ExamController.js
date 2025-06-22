@@ -72,10 +72,30 @@ export const getExamDetail = async (req, res, next) => {
 
 export const addExam = async (req, res, next) => {
   try {
-    const { title, subject, teacher_id, duration, start_time, end_time} = req.body;
-    const exam = await Exam.create({ title, subject, teacher_id, duration, start_time, end_time});
-    console.log(exam);
-    res.status(201).json(exam);
+    const { title, subject, teacher_id, duration, start_time, end_time, questions} = req.body;
+
+    const transaction = await sequelize.transaction();
+
+    try {
+      const exam = await Exam.create({ title, subject, teacher_id, duration, start_time, end_time}, { transaction});
+
+      if (!questions){
+        return res.status(400).json({ message: 'Không có câu hỏi để thêm vào bài thi'});
+      }
+
+      const examQuestions = questions.map(question => ({
+        exam_id: exam.id,
+        question_id: question.id
+      }));
+      await ExamQuestion.bulkCreate(examQuestions, { transaction });
+      
+      await transaction.commit();
+
+      res.status(201).json({ message: 'Bài thi đã được thêm thành công'});
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Server bị lỗi'});

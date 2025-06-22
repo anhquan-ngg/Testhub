@@ -72,7 +72,7 @@ const ExamTakingPage = () => {
         }
 
         setExamData(response.data);
-        setTimeLeft(response.data.duration);
+        setTimeLeft(response.data.duration * 60);
 
       } catch (error) {
         console.error('Error details:', {

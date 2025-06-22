@@ -165,9 +165,16 @@ const ExamManagement = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div> Từ {new Date(exam.start_time).toLocaleString('vi-VN')}</div>
+                    <div> Từ {new Date(exam.start_time).toLocaleString('vi-VN', {
+                        timeZone: 'Asia/Ho_Chi_Minh',
+                        hour12: false
+                      })}
+                    </div>
                     <div className="text-sm text-muted-foreground">
-                      Đến {new Date(exam.end_time).toLocaleString('vi-VN')}
+                      Đến {new Date(exam.end_time).toLocaleString('vi-VN',{
+                        timeZone: 'Asia/Ho_Chi_Minh',
+                        hour12: false
+                      })}
                     </div>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
@@ -223,8 +230,14 @@ const ExamManagement = () => {
               <div>
                 <h3 className="font-medium text-foreground">Thời gian</h3>
                 <div className="mt-2 space-y-2">
-                  <p><span className="text-muted-foreground">Bắt đầu:</span> {new Date(selectedExam.start_time).toLocaleString('vi-VN')}</p>
-                  <p><span className="text-muted-foreground">Kết thúc:</span> {new Date(selectedExam.end_time).toLocaleString('vi-VN')}</p>
+                  <p><span className="text-muted-foreground">Bắt đầu:</span> {new Date(selectedExam.start_time).toLocaleString('vi-VN', {
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                    hour12: false
+                  })}</p>
+                  <p><span className="text-muted-foreground">Kết thúc:</span> {new Date(selectedExam.end_time).toLocaleString('vi-VN', {
+                    timeZone: 'Asia/Ho_Chi_Minh',
+                    hour12: false
+                  })}</p>
                   <p><span className="text-muted-foreground">Số thí sinh:</span> {selectedExam.participants}</p>
                 </div>
               </div>

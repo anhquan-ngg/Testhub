@@ -60,6 +60,7 @@ const CreateExam = () => {
         ...data,
         teacher_id: userInfo.id,
         questions: questions.map((q, index) => ({
+          id: q.id,
           content: q.content || q.text,
           type: q.type,
           score: Number(q.score),
