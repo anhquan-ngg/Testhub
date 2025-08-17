@@ -149,7 +149,7 @@ const StudentResults = () => {
             placeholder="Tìm kiếm theo tên bài thi hoặc môn học..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 bg-white border-none"
+            className="pl-9 bg-white border-none outline-none"
           />
         </div>
       </div>

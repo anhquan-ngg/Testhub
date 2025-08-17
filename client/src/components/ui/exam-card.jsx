@@ -41,7 +41,7 @@ const ExamCard = ({exam}) => {
     },[]);
 
     return (
-        <Card className="max-w border border-[#f5f5f5] bg-white">
+        <Card className="max-w border !border-gray-200 bg-white">
             <CardHeader className="border-b-2 border-[#f5f5f5] pb-3">
                 <CardTitle className="text-lg text-bold font-medium">{exam.title}</CardTitle>
             </CardHeader>

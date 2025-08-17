@@ -118,21 +118,21 @@ const ExamManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 bg-white border border-gray-200 rounded-md">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Tìm kiếm bài thi theo tên hoặc môn học..."
             value={searchTerm}
             onChange={handleSearch}
-            className="pl-9"
+            className="pl-9 border border-gray-200"
           />
         </div>
       </div>
 
       {/* Exams Table */}
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border border-gray-200 bg-white">
+        <Table className="">
           <TableHeader>
             <TableRow>
               <TableHead>Bài thi</TableHead>

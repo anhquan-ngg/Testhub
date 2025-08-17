@@ -42,11 +42,6 @@ const menuItems = [
     icon: FileQuestion,
     href: '/admin/questions'
   },
-  // {
-  //   title: 'Cài đặt',
-  //   icon: Settings,
-  //   href: '/admin/settings'
-  // }
 ];
 
 const AdminLayout = () => {
@@ -93,7 +88,7 @@ const AdminLayout = () => {
   return (
     <div className="relative flex min-h-screen">
       {/* Sidebar cho desktop */}
-      <aside className="hidden border-r bg-white lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
+      <aside className="hidden border-r-gray-200 bg-white lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
         <div className="flex flex-col gap-4 p-6">
           <div className="flex items-center gap-2 border-b pb-4">
             <User className="h-6 w-6" />
@@ -161,7 +156,7 @@ const AdminLayout = () => {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 bg-[#b8cae8]">
           <Outlet />
         </main>
       </div>

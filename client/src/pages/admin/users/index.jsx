@@ -197,13 +197,13 @@ const UserManagement = () => {
             placeholder="Tìm kiếm theo tên hoặc email..."
             value={searchTerm}
             onChange={handleSearch}
-            className="pl-9"
+            className="pl-9 h-10 border border-gray-200 bg-white"
           />
         </div>
         <select
           value={roleFilter}
           onChange={handleRoleFilter}
-          className="px-4 py-2 border rounded-md bg-background"
+          className="px-3 py-2 border border-gray-200 bg-white rounded-md bg-background"
         >
           <option value="all">Tất cả vai trò</option>
           <option value="admin">Admin</option>
@@ -212,7 +212,7 @@ const UserManagement = () => {
       </div>
 
       {/* Users Table */}
-      <div className="rounded-md border">
+      <div className="rounded-md border border-gray-200 bg-white">
         <Table>
           <TableHeader>
             <TableRow>

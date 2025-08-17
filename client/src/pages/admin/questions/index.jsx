@@ -175,13 +175,13 @@ const QuestionManagement = () => {
             placeholder="Tìm kiếm câu hỏi..."
             value={searchTerm}
             onChange={handleSearch}
-            className="pl-9"
+            className="pl-9 h-10 border border-gray-200 bg-white"
           />
         </div>
         <select
           value={subjectFilter}
           onChange={handleSubjectFilter}
-          className="px-4 py-2 border rounded-md bg-background"
+          className="px-4 py-2 border border-gray-200 bg-white rounded-md"
         >
           <option value="all">Tất cả môn học</option>
           {Object.entries(subjectMap).map(([key, value]) => (
@@ -191,7 +191,7 @@ const QuestionManagement = () => {
         <select
           value={typeFilter}
           onChange={handleTypeFilter}
-          className="px-4 py-2 border rounded-md bg-background"
+          className="px-4 py-2 border border-gray-200 bg-white rounded-md"
         >
           <option value="all">Tất cả loại câu hỏi</option>
           {Object.entries(typeMap).map(([key, value]) => (
@@ -201,8 +201,8 @@ const QuestionManagement = () => {
       </div>
 
       {/* Questions Table */}
-      <div className="rounded-md border">
-        <Table>
+      <div>
+        <Table className="border border-gray-200 bg-white rounded-md">
           <TableHeader>
             <TableRow>
               <TableHead>Câu hỏi</TableHead>

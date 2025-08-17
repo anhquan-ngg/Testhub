@@ -61,7 +61,7 @@ const Dashboard = () => {
   };
 
   const StatCard = ({ title, value, icon: Icon, description }) => (
-    <Card>
+    <Card className="bg-white border border-gray-200">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
@@ -82,9 +82,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w bg-[#b8cae8]">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
         <Button 
           className="bg-black text-white"
           onClick={() => fetchDashboardData()}
@@ -122,7 +122,7 @@ const Dashboard = () => {
       </div>
 
       {/* Bài thi gần đây */}
-      <Card>
+      <Card className="bg-white border border-gray-200">
         <CardHeader>
           <CardTitle>Bài thi gần đây</CardTitle>
           <CardDescription>
@@ -132,7 +132,7 @@ const Dashboard = () => {
         <CardContent>
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow> 
                 <TableHead>Tên bài thi</TableHead>
                 <TableHead>Môn học</TableHead>
                 <TableHead>Trạng thái</TableHead>
@@ -168,7 +168,7 @@ const Dashboard = () => {
       </Card>
 
       {/* Học viên mới */}
-      <Card>
+      <Card className="bg-white border border-gray-200">
         <CardHeader>
           <CardTitle>Học viên mới đăng ký</CardTitle>
           <CardDescription>
