@@ -4,8 +4,8 @@ import { getAllUsers, getRecentUsers, addUser, patchUser, deleteUser } from '../
 
 const userRoutes = Router();
 
-// GET ALL USERS
-userRoutes.get('/list-users', verifyToken, getAllUsers);
+// GET ALL USERS - sử dụng query parameters cho pagination
+userRoutes.get('/list-users', getAllUsers);
 
 // GET RECENT USERS
 userRoutes.get('/recent-users', verifyToken, getRecentUsers);
